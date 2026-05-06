@@ -18,7 +18,7 @@ class Estudiante extends Model
 
     protected $fillable = [
         'nombreE', 'paternoE', 'maternoE', 'RegistroE', 'CedulaE',
-        'TelefonoE', 'DescuentoE', 'ObservacionE',
+        'TelefonoE', 'DireccionE', 'DescuentoE', 'ObservacionE', 'ActivoE',
     ];
 
     public function cursos(): BelongsToMany

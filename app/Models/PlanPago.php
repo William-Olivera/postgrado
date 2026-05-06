@@ -16,7 +16,7 @@ class PlanPago extends Model
 
     public $timestamps = false;
 
-    protected $fillable = ['MontoTotalPP', 'TotalCuotasPP', 'Id_Cur'];
+    protected $fillable = ['MontoTotalPP', 'MontoMatriculaPP', 'MontoCuotaPP', 'NroCuotasPP', 'TotalCuotasPP', 'Id_Cur'];
 
     public function curso(): BelongsTo
     {

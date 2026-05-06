@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use App\Models\PlanPago;
 
 class Curso extends Model
 {
@@ -16,7 +18,17 @@ class Curso extends Model
 
     public $timestamps = false;
 
-    protected $fillable = ['NombreCur', 'TipoCur', 'VersionCur', 'EdicionCur'];
+    protected $fillable = [
+        'NombreCur',
+        'TipoCur',
+        'VersionCur',
+        'EdicionCur',
+        'DuracionCur',
+        'CupoCur',
+        'PeriodoCur',
+        'CostoCur',
+        'DescripcionCur',
+    ];
 
     public function estudiantes(): BelongsToMany
     {
@@ -27,5 +39,10 @@ class Curso extends Model
     public function planesPago(): HasMany
     {
         return $this->hasMany(PlanPago::class, 'Id_Cur', 'Id_Cur');
+    }
+
+    public function planPago(): HasOne
+    {
+        return $this->hasOne(PlanPago::class, 'Id_Cur', 'Id_Cur');
     }
 }

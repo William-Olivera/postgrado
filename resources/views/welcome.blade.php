@@ -65,9 +65,15 @@
 
         .actions {
             display: grid;
+            grid-template-columns: repeat(2, 1fr);
             gap: 14px;
-            width: min(440px, 100%);
+            width: min(520px, 100%);
             margin: 0 auto;
+        }
+
+        .action-btn--admin {
+            grid-column: 1 / -1;
+            justify-self: center;
         }
 
         .action-btn {
@@ -474,6 +480,7 @@
             <button class="action-btn" type="button" id="btnAbrirRegistrarPago">Registrar pago</button>
             <button class="action-btn" type="button" id="btnAbrirControlSaldos">Control de saldos</button>
             <button class="action-btn" type="button">Buscar pago</button>
+            <button class="action-btn action-btn--admin" type="button">Administrar datos</button>
         </section>
     </main>
 

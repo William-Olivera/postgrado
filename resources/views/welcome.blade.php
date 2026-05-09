@@ -480,7 +480,7 @@
             <button class="action-btn" type="button" id="btnAbrirRegistrarPago">Registrar pago</button>
             <button class="action-btn" type="button" id="btnAbrirControlSaldos">Control de saldos</button>
             <button class="action-btn" type="button">Buscar pago</button>
-            <button class="action-btn action-btn--admin" type="button">Administrar datos</button>
+            <button class="action-btn action-btn--admin" type="button" id="btnAbrirAdminDatos">Administrar datos</button>
         </section>
     </main>
 
@@ -788,6 +788,244 @@
                             <p class="label">Monto total</p>
                             <p class="valor" id="saldosGesMontoTotal">—</p>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalAdminDatos" class="modal-overlay" hidden>
+        <div class="modal-dialog modal-dialog--wide" role="dialog" aria-modal="true" aria-labelledby="modalAdminTitle">
+            <header class="modal-header">
+                <h2 id="modalAdminTitle">Administrar datos</h2>
+                <button type="button" class="modal-close" id="btnCerrarAdminDatos" aria-label="Cerrar">&times;</button>
+            </header>
+            <div class="modal-body">
+                <div id="adminPanelMenu">
+                    <p class="hint">Seleccione una acción.</p>
+                    <div class="btn-row" style="flex-wrap: wrap; gap: 10px">
+                        <button type="button" class="btn-primary" id="adminBtnIrCrearCurso">Crear curso</button>
+                        <button type="button" class="btn-primary" id="adminBtnIrEditarCurso">Editar curso</button>
+                        <button type="button" class="btn-primary" id="adminBtnIrEditarEst">Editar estudiante</button>
+                        <button type="button" class="btn-primary" id="adminBtnIrEditarPago">Editar pago</button>
+                    </div>
+                </div>
+
+                <div id="adminPanelCrearCurso" class="panel-modo" hidden>
+                    <p class="hint">Complete los datos del nuevo curso.</p>
+                    <div class="field">
+                        <label for="adminNombreCurNuevo">Nombre del curso <span aria-hidden="true">*</span></label>
+                        <input type="text" id="adminNombreCurNuevo" maxlength="100" autocomplete="off">
+                    </div>
+                    <div class="field">
+                        <label for="adminTipoCurNuevo">Tipo <span aria-hidden="true">*</span></label>
+                        <select id="adminTipoCurNuevo">
+                            <option value="">Seleccione…</option>
+                            <option value="Maestria">Maestría</option>
+                            <option value="Diplomado">Diplomado</option>
+                        </select>
+                    </div>
+                    <div class="field-row">
+                        <div class="field">
+                            <label for="adminEdicionCurNuevo">Edición <span aria-hidden="true">*</span></label>
+                            <input type="number" id="adminEdicionCurNuevo" min="1" step="1" value="1">
+                        </div>
+                        <div class="field">
+                            <label for="adminVersionCurNuevo">Versión <span aria-hidden="true">*</span></label>
+                            <input type="number" id="adminVersionCurNuevo" min="1" step="1" value="1">
+                        </div>
+                    </div>
+                    <p id="adminErrorCrearCurso" class="form-error" hidden></p>
+                    <div class="btn-row">
+                        <button type="button" class="btn-secondary" id="adminBtnVolverDesdeCrearCurso">Volver</button>
+                        <button type="button" class="btn-primary" id="adminBtnGuardarCrearCurso">Guardar curso</button>
+                    </div>
+                </div>
+
+                <div id="adminPanelEditarCurso" class="panel-modo" hidden>
+                    <div class="field">
+                        <label for="adminSelectCursoEdit">Curso <span aria-hidden="true">*</span></label>
+                        <select id="adminSelectCursoEdit">
+                            <option value="">Cargando…</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="adminNombreCurEdit">Nombre del curso <span aria-hidden="true">*</span></label>
+                        <input type="text" id="adminNombreCurEdit" maxlength="100" autocomplete="off">
+                    </div>
+                    <div class="field">
+                        <label for="adminTipoCurEdit">Tipo <span aria-hidden="true">*</span></label>
+                        <select id="adminTipoCurEdit">
+                            <option value="">Seleccione…</option>
+                            <option value="Maestria">Maestría</option>
+                            <option value="Diplomado">Diplomado</option>
+                        </select>
+                    </div>
+                    <div class="field-row">
+                        <div class="field">
+                            <label for="adminEdicionCurEdit">Edición <span aria-hidden="true">*</span></label>
+                            <input type="number" id="adminEdicionCurEdit" min="1" step="1">
+                        </div>
+                        <div class="field">
+                            <label for="adminVersionCurEdit">Versión <span aria-hidden="true">*</span></label>
+                            <input type="number" id="adminVersionCurEdit" min="1" step="1">
+                        </div>
+                    </div>
+                    <p id="adminErrorEditarCurso" class="form-error" hidden></p>
+                    <div class="btn-row">
+                        <button type="button" class="btn-secondary" id="adminBtnVolverDesdeEditarCurso">Volver</button>
+                        <button type="button" class="btn-primary" id="adminBtnGuardarEditarCurso">Guardar cambios</button>
+                    </div>
+                </div>
+
+                <div id="adminPanelEditarEst" class="panel-modo" hidden>
+                    <div class="field-row">
+                        <div class="field">
+                            <label for="adminCampoBusqEst">Buscar por</label>
+                            <select id="adminCampoBusqEst">
+                                <option value="nombre">Nombre (nombre / apellidos)</option>
+                                <option value="registro">Número de registro</option>
+                                <option value="cedula">Cédula</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label for="adminTextoBusqEst">Término</label>
+                            <input type="text" id="adminTextoBusqEst" autocomplete="off" placeholder="Escriba y pulse Buscar">
+                        </div>
+                    </div>
+                    <div class="btn-row">
+                        <button type="button" class="btn-secondary" id="adminBtnBuscarEst">Buscar</button>
+                    </div>
+                    <div class="field">
+                        <label>Estudiante</label>
+                        <div id="adminListaResultadosEst" class="search-results" hidden></div>
+                        <p id="adminMsgEstBusqueda" class="hint">Busque y seleccione un estudiante.</p>
+                    </div>
+                    <hr style="margin: 16px 0; border: 0; border-top: 1px solid var(--border, #ccc)">
+                    <div id="adminBloqueFormEst" hidden>
+                        <div class="field">
+                            <label for="adminEditNombreE">Nombre(s) <span aria-hidden="true">*</span></label>
+                            <input type="text" id="adminEditNombreE" maxlength="50">
+                        </div>
+                        <div class="field-row">
+                            <div class="field">
+                                <label for="adminEditPaternoE">Apellido paterno <span aria-hidden="true">*</span></label>
+                                <input type="text" id="adminEditPaternoE" maxlength="20">
+                            </div>
+                            <div class="field">
+                                <label for="adminEditMaternoE">Apellido materno</label>
+                                <input type="text" id="adminEditMaternoE" maxlength="20">
+                            </div>
+                        </div>
+                        <div class="field-row">
+                            <div class="field">
+                                <label for="adminEditRegistroE">Registro (ID universitario) <span aria-hidden="true">*</span></label>
+                                <input type="number" id="adminEditRegistroE" min="1" step="1">
+                            </div>
+                            <div class="field">
+                                <label for="adminEditCedulaE">C.I. (cédula de identidad) <span aria-hidden="true">*</span></label>
+                                <input type="text" id="adminEditCedulaE" maxlength="20">
+                            </div>
+                        </div>
+                        <div class="field-row">
+                            <div class="field">
+                                <label for="adminEditTelefonoE">Teléfono <span aria-hidden="true">*</span></label>
+                                <input type="text" id="adminEditTelefonoE" maxlength="20">
+                            </div>
+                            <div class="field">
+                                <label for="adminEditDescuentoE">Descuento (%) <span aria-hidden="true">*</span></label>
+                                <select id="adminEditDescuentoE">
+                                    <option value="0">0</option>
+                                    <option value="10">10</option>
+                                    <option value="20">20</option>
+                                    <option value="30">30</option>
+                                    <option value="40">40</option>
+                                    <option value="50">50</option>
+                                    <option value="60">60</option>
+                                    <option value="70">70</option>
+                                    <option value="80">80</option>
+                                    <option value="90">90</option>
+                                    <option value="100">100</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <p id="adminErrorEditarEst" class="form-error" hidden></p>
+                    <div class="btn-row">
+                        <button type="button" class="btn-secondary" id="adminBtnVolverDesdeEditarEst">Volver</button>
+                        <button type="button" class="btn-primary" id="adminBtnGuardarEst" disabled>Guardar estudiante</button>
+                    </div>
+                </div>
+
+                <div id="adminPanelEditarPago" class="panel-modo" hidden>
+                    <div class="field-row">
+                        <div class="field">
+                            <label for="adminCampoBusqPago">Buscar por</label>
+                            <select id="adminCampoBusqPago">
+                                <option value="nombre">Nombre (nombre / apellidos)</option>
+                                <option value="registro">Número de registro</option>
+                                <option value="cedula">Cédula</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label for="adminTextoBusqPago">Término</label>
+                            <input type="text" id="adminTextoBusqPago" autocomplete="off" placeholder="Escriba y pulse Buscar">
+                        </div>
+                    </div>
+                    <div class="btn-row">
+                        <button type="button" class="btn-secondary" id="adminBtnBuscarEstPago">Buscar</button>
+                    </div>
+                    <div class="field">
+                        <label>Estudiante</label>
+                        <div id="adminListaEstPago" class="search-results" hidden></div>
+                        <p id="adminMsgEstPago" class="hint">Busque y seleccione un estudiante.</p>
+                    </div>
+                    <div id="adminBloqueListaPagos" class="field" hidden>
+                        <label>Pagos registrados</label>
+                        <div id="adminListaPagosItems" class="search-results"></div>
+                    </div>
+                    <div id="adminBloqueFormPago" hidden>
+                        <p class="hint" id="adminResumenPagoEdit"></p>
+                        <div class="field">
+                            <label for="adminMontoPagoEdit">Monto pagado <span aria-hidden="true">*</span></label>
+                            <input type="number" id="adminMontoPagoEdit" step="0.01" min="0.01" placeholder="0.00">
+                        </div>
+                        <div class="field">
+                            <span>Tipo de pago <span aria-hidden="true">*</span></span>
+                            <div class="radio-group">
+                                <label><input type="radio" name="adminTipoPagoEdit" value="Matricula"> Matrícula</label>
+                                <label><input type="radio" name="adminTipoPagoEdit" value="Cuota"> Cuota</label>
+                                <label><input type="radio" name="adminTipoPagoEdit" value="Defensa"> Defensa</label>
+                            </div>
+                        </div>
+                        <div class="field" id="adminBloqueNroCuotaEdit" hidden>
+                            <label for="adminNroCuotaEdit">Número de cuota <span aria-hidden="true">*</span></label>
+                            <select id="adminNroCuotaEdit">
+                                <option value="">Seleccione…</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label for="adminFechaPagoEdit">Fecha <span aria-hidden="true">*</span></label>
+                            <input type="date" id="adminFechaPagoEdit">
+                        </div>
+                        <div class="field">
+                            <label for="adminNroCompEdit">Número de comprobante <span aria-hidden="true">*</span></label>
+                            <input type="number" id="adminNroCompEdit" min="1" step="1" placeholder="Ej. 21649751">
+                        </div>
+                        <div class="field">
+                            <label for="adminCuentaEdit">Número de cuenta bancaria <span aria-hidden="true">*</span></label>
+                            <input type="text" id="adminCuentaEdit" maxlength="50" placeholder="Cuenta desde la que transfirió">
+                        </div>
+                    </div>
+                    <p id="adminErrorEditarPago" class="form-error" hidden></p>
+                    <div class="btn-row">
+                        <button type="button" class="btn-secondary" id="adminBtnVolverDesdeEditarPago">Volver</button>
+                        <button type="button" class="btn-primary" id="adminBtnGuardarPago" disabled>Guardar pago</button>
                     </div>
                 </div>
             </div>
@@ -1558,6 +1796,608 @@
                 } catch (e) {
                     errGes.textContent = 'Error de red o del servidor.';
                     errGes.hidden = false;
+                }
+            });
+        })();
+
+        (function () {
+            const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+            const modal = document.getElementById('modalAdminDatos');
+            const btnAbrir = document.getElementById('btnAbrirAdminDatos');
+            const btnCerrar = document.getElementById('btnCerrarAdminDatos');
+            const panelMenu = document.getElementById('adminPanelMenu');
+            const panelCrear = document.getElementById('adminPanelCrearCurso');
+            const panelEditCur = document.getElementById('adminPanelEditarCurso');
+            const panelEditEst = document.getElementById('adminPanelEditarEst');
+            const panelEditPago = document.getElementById('adminPanelEditarPago');
+
+            let adminCursosCache = [];
+            let adminSelectedEstId = null;
+            let adminSelectedPagoId = null;
+            let adminSelectedEstPagoNombre = '';
+
+            function showAdminPanel(which) {
+                panelMenu.hidden = which !== 'menu';
+                panelCrear.hidden = which !== 'crear';
+                panelEditCur.hidden = which !== 'edit_cur';
+                panelEditEst.hidden = which !== 'edit_est';
+                panelEditPago.hidden = which !== 'edit_pago';
+            }
+
+            function resetAdminModal() {
+                showAdminPanel('menu');
+                document.getElementById('adminErrorCrearCurso').hidden = true;
+                document.getElementById('adminErrorEditarCurso').hidden = true;
+                document.getElementById('adminErrorEditarEst').hidden = true;
+                document.getElementById('adminErrorEditarPago').hidden = true;
+                document.getElementById('adminNombreCurNuevo').value = '';
+                document.getElementById('adminTipoCurNuevo').value = '';
+                document.getElementById('adminEdicionCurNuevo').value = '1';
+                document.getElementById('adminVersionCurNuevo').value = '1';
+                adminCursosCache = [];
+                adminSelectedEstId = null;
+                adminSelectedPagoId = null;
+                adminSelectedEstPagoNombre = '';
+                document.getElementById('adminListaResultadosEst').innerHTML = '';
+                document.getElementById('adminListaResultadosEst').hidden = true;
+                document.getElementById('adminMsgEstBusqueda').hidden = false;
+                document.getElementById('adminTextoBusqEst').value = '';
+                document.getElementById('adminBloqueFormEst').hidden = true;
+                document.getElementById('adminBtnGuardarEst').disabled = true;
+                document.getElementById('adminListaEstPago').innerHTML = '';
+                document.getElementById('adminListaEstPago').hidden = true;
+                document.getElementById('adminMsgEstPago').hidden = false;
+                document.getElementById('adminTextoBusqPago').value = '';
+                document.getElementById('adminBloqueListaPagos').hidden = true;
+                document.getElementById('adminListaPagosItems').innerHTML = '';
+                document.getElementById('adminBloqueFormPago').hidden = true;
+                document.getElementById('adminBtnGuardarPago').disabled = true;
+                document.querySelectorAll('input[name="adminTipoPagoEdit"]').forEach((r) => {
+                    r.checked = false;
+                });
+                document.getElementById('adminBloqueNroCuotaEdit').hidden = true;
+                document.getElementById('adminNroCuotaEdit').value = '';
+                document.getElementById('adminNroCuotaEdit').removeAttribute('required');
+            }
+
+            function openModal() {
+                resetAdminModal();
+                modal.hidden = false;
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeModal() {
+                modal.hidden = true;
+                document.body.style.overflow = '';
+            }
+
+            btnAbrir.addEventListener('click', openModal);
+            btnCerrar.addEventListener('click', closeModal);
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) closeModal();
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && !modal.hidden) closeModal();
+            });
+
+            document.getElementById('adminBtnIrCrearCurso').addEventListener('click', () => {
+                showAdminPanel('crear');
+                document.getElementById('adminErrorCrearCurso').hidden = true;
+            });
+            document.getElementById('adminBtnVolverDesdeCrearCurso').addEventListener('click', () => showAdminPanel('menu'));
+
+            document.getElementById('adminBtnIrEditarCurso').addEventListener('click', async () => {
+                showAdminPanel('edit_cur');
+                document.getElementById('adminErrorEditarCurso').hidden = true;
+                const sel = document.getElementById('adminSelectCursoEdit');
+                sel.innerHTML = '<option value="">Cargando…</option>';
+                try {
+                    const r = await fetch('/api/cursos', { headers: { Accept: 'application/json' } });
+                    const j = await r.json();
+                    if (!r.ok) throw new Error();
+                    adminCursosCache = j.data || [];
+                    sel.innerHTML = '<option value="">Seleccione un curso…</option>';
+                    adminCursosCache.forEach((c) => {
+                        const opt = document.createElement('option');
+                        opt.value = c.Id_Cur;
+                        opt.textContent = c.NombreCur + ' — ' + c.TipoCur + ' v' + c.VersionCur + ' (Ed. ' + c.EdicionCur + ')';
+                        sel.appendChild(opt);
+                    });
+                    sel.value = '';
+                    document.getElementById('adminNombreCurEdit').value = '';
+                    document.getElementById('adminTipoCurEdit').value = '';
+                    document.getElementById('adminEdicionCurEdit').value = '';
+                    document.getElementById('adminVersionCurEdit').value = '';
+                } catch (e) {
+                    sel.innerHTML = '<option value="">Error al cargar</option>';
+                }
+            });
+
+            document.getElementById('adminSelectCursoEdit').addEventListener('change', () => {
+                const id = Number(document.getElementById('adminSelectCursoEdit').value);
+                const c = adminCursosCache.find((x) => Number(x.Id_Cur) === id);
+                if (!c) {
+                    document.getElementById('adminNombreCurEdit').value = '';
+                    document.getElementById('adminTipoCurEdit').value = '';
+                    document.getElementById('adminEdicionCurEdit').value = '';
+                    document.getElementById('adminVersionCurEdit').value = '';
+                    return;
+                }
+                document.getElementById('adminNombreCurEdit').value = c.NombreCur;
+                document.getElementById('adminTipoCurEdit').value = c.TipoCur;
+                document.getElementById('adminEdicionCurEdit').value = c.EdicionCur;
+                document.getElementById('adminVersionCurEdit').value = c.VersionCur;
+            });
+
+            document.getElementById('adminBtnVolverDesdeEditarCurso').addEventListener('click', () => showAdminPanel('menu'));
+
+            document.getElementById('adminBtnGuardarCrearCurso').addEventListener('click', async () => {
+                const errEl = document.getElementById('adminErrorCrearCurso');
+                errEl.hidden = true;
+                const NombreCur = document.getElementById('adminNombreCurNuevo').value.trim();
+                const TipoCur = document.getElementById('adminTipoCurNuevo').value;
+                const EdicionCur = Number(document.getElementById('adminEdicionCurNuevo').value);
+                const VersionCur = Number(document.getElementById('adminVersionCurNuevo').value);
+                if (!NombreCur || !TipoCur || !EdicionCur || !VersionCur) {
+                    errEl.textContent = 'Complete todos los campos obligatorios.';
+                    errEl.hidden = false;
+                    return;
+                }
+                const btn = document.getElementById('adminBtnGuardarCrearCurso');
+                btn.disabled = true;
+                try {
+                    const r = await fetch('/api/admin/cursos', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Accept: 'application/json',
+                            'X-CSRF-TOKEN': csrf,
+                        },
+                        body: JSON.stringify({ NombreCur, TipoCur, EdicionCur, VersionCur }),
+                    });
+                    const j = await r.json();
+                    if (!r.ok) {
+                        errEl.textContent = j.errors ? Object.values(j.errors).flat().join(' ') : (j.message || 'Error');
+                        errEl.hidden = false;
+                        return;
+                    }
+                    window.alert(j.message || 'Curso creado.');
+                    resetAdminModal();
+                } catch (e) {
+                    errEl.textContent = 'Error de red o del servidor.';
+                    errEl.hidden = false;
+                } finally {
+                    btn.disabled = false;
+                }
+            });
+
+            document.getElementById('adminBtnGuardarEditarCurso').addEventListener('click', async () => {
+                const errEl = document.getElementById('adminErrorEditarCurso');
+                errEl.hidden = true;
+                const id = Number(document.getElementById('adminSelectCursoEdit').value);
+                if (!id) {
+                    errEl.textContent = 'Seleccione un curso.';
+                    errEl.hidden = false;
+                    return;
+                }
+                const NombreCur = document.getElementById('adminNombreCurEdit').value.trim();
+                const TipoCur = document.getElementById('adminTipoCurEdit').value;
+                const EdicionCur = Number(document.getElementById('adminEdicionCurEdit').value);
+                const VersionCur = Number(document.getElementById('adminVersionCurEdit').value);
+                if (!NombreCur || !TipoCur || !EdicionCur || !VersionCur) {
+                    errEl.textContent = 'Complete todos los campos obligatorios.';
+                    errEl.hidden = false;
+                    return;
+                }
+                const btn = document.getElementById('adminBtnGuardarEditarCurso');
+                btn.disabled = true;
+                try {
+                    const r = await fetch('/api/admin/cursos/' + id, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Accept: 'application/json',
+                            'X-CSRF-TOKEN': csrf,
+                        },
+                        body: JSON.stringify({ NombreCur, TipoCur, EdicionCur, VersionCur }),
+                    });
+                    const j = await r.json();
+                    if (!r.ok) {
+                        errEl.textContent = j.errors ? Object.values(j.errors).flat().join(' ') : (j.message || 'Error');
+                        errEl.hidden = false;
+                        return;
+                    }
+                    window.alert(j.message || 'Curso actualizado.');
+                    resetAdminModal();
+                } catch (e) {
+                    errEl.textContent = 'Error de red o del servidor.';
+                    errEl.hidden = false;
+                } finally {
+                    btn.disabled = false;
+                }
+            });
+
+            document.getElementById('adminBtnIrEditarEst').addEventListener('click', () => {
+                showAdminPanel('edit_est');
+                document.getElementById('adminErrorEditarEst').hidden = true;
+            });
+            document.getElementById('adminBtnVolverDesdeEditarEst').addEventListener('click', () => showAdminPanel('menu'));
+
+            document.getElementById('adminBtnBuscarEst').addEventListener('click', async () => {
+                const errEl = document.getElementById('adminErrorEditarEst');
+                errEl.hidden = true;
+                const q = document.getElementById('adminTextoBusqEst').value.trim();
+                if (!q) {
+                    errEl.textContent = 'Ingrese un término de búsqueda.';
+                    errEl.hidden = false;
+                    return;
+                }
+                const lista = document.getElementById('adminListaResultadosEst');
+                const msg = document.getElementById('adminMsgEstBusqueda');
+                lista.innerHTML = '<p class="hint" style="padding:12px">Buscando…</p>';
+                lista.hidden = false;
+                msg.hidden = true;
+                adminSelectedEstId = null;
+                document.getElementById('adminBloqueFormEst').hidden = true;
+                document.getElementById('adminBtnGuardarEst').disabled = true;
+                try {
+                    const params = new URLSearchParams({
+                        campo: document.getElementById('adminCampoBusqEst').value,
+                        q,
+                    });
+                    const r = await fetch('/api/estudiantes/base/buscar?' + params.toString(), {
+                        headers: { Accept: 'application/json' },
+                    });
+                    const j = await r.json();
+                    if (!r.ok) {
+                        lista.innerHTML = '';
+                        lista.hidden = true;
+                        msg.hidden = false;
+                        errEl.textContent = j.errors ? Object.values(j.errors).flat().join(' ') : (j.message || 'Error');
+                        errEl.hidden = false;
+                        return;
+                    }
+                    const rows = j.data || [];
+                    lista.innerHTML = '';
+                    if (!rows.length) {
+                        lista.innerHTML = '<p class="hint" style="padding:12px">No hay resultados.</p>';
+                        return;
+                    }
+                    rows.forEach((row) => {
+                        const b = document.createElement('button');
+                        b.type = 'button';
+                        b.className = 'search-result-item';
+                        b.textContent = row.nombre_completo + ' — Reg. ' + row.RegistroE + ' — CI ' + row.CedulaE;
+                        b.addEventListener('click', async () => {
+                            lista.querySelectorAll('.search-result-item').forEach((x) => x.classList.remove('selected'));
+                            b.classList.add('selected');
+                            errEl.hidden = true;
+                            try {
+                                const r2 = await fetch('/api/admin/estudiantes/' + row.Id_E, {
+                                    headers: { Accept: 'application/json' },
+                                });
+                                const j2 = await r2.json();
+                                if (!r2.ok) {
+                                    errEl.textContent = j2.message || 'No se pudo cargar el estudiante.';
+                                    errEl.hidden = false;
+                                    return;
+                                }
+                                const d = j2.data;
+                                adminSelectedEstId = d.Id_E;
+                                document.getElementById('adminEditNombreE').value = d.nombreE;
+                                document.getElementById('adminEditPaternoE').value = d.paternoE;
+                                document.getElementById('adminEditMaternoE').value = d.maternoE || '';
+                                document.getElementById('adminEditRegistroE').value = d.RegistroE;
+                                document.getElementById('adminEditCedulaE').value = d.CedulaE;
+                                document.getElementById('adminEditTelefonoE').value = d.TelefonoE;
+                                document.getElementById('adminEditDescuentoE').value = String(d.DescuentoE);
+                                document.getElementById('adminBloqueFormEst').hidden = false;
+                                document.getElementById('adminBtnGuardarEst').disabled = false;
+                            } catch (e2) {
+                                errEl.textContent = 'Error al cargar datos del estudiante.';
+                                errEl.hidden = false;
+                            }
+                        });
+                        lista.appendChild(b);
+                    });
+                } catch (e) {
+                    lista.innerHTML = '';
+                    lista.hidden = true;
+                    msg.hidden = false;
+                    errEl.textContent = 'No se pudo completar la búsqueda.';
+                    errEl.hidden = false;
+                }
+            });
+
+            document.getElementById('adminBtnGuardarEst').addEventListener('click', async () => {
+                const errEl = document.getElementById('adminErrorEditarEst');
+                errEl.hidden = true;
+                if (!adminSelectedEstId) return;
+                const payload = {
+                    nombreE: document.getElementById('adminEditNombreE').value.trim(),
+                    paternoE: document.getElementById('adminEditPaternoE').value.trim(),
+                    maternoE: document.getElementById('adminEditMaternoE').value.trim() || null,
+                    RegistroE: Number(document.getElementById('adminEditRegistroE').value),
+                    CedulaE: document.getElementById('adminEditCedulaE').value.trim(),
+                    TelefonoE: document.getElementById('adminEditTelefonoE').value.trim(),
+                    DescuentoE: Number(document.getElementById('adminEditDescuentoE').value),
+                };
+                if (!payload.nombreE || !payload.paternoE || !payload.RegistroE || !payload.CedulaE || !payload.TelefonoE) {
+                    errEl.textContent = 'Complete todos los campos obligatorios.';
+                    errEl.hidden = false;
+                    return;
+                }
+                const btn = document.getElementById('adminBtnGuardarEst');
+                btn.disabled = true;
+                try {
+                    const r = await fetch('/api/admin/estudiantes/' + adminSelectedEstId, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Accept: 'application/json',
+                            'X-CSRF-TOKEN': csrf,
+                        },
+                        body: JSON.stringify(payload),
+                    });
+                    const j = await r.json();
+                    if (!r.ok) {
+                        errEl.textContent = j.errors ? Object.values(j.errors).flat().join(' ') : (j.message || 'Error');
+                        errEl.hidden = false;
+                        return;
+                    }
+                    window.alert(j.message || 'Estudiante actualizado.');
+                    resetAdminModal();
+                } catch (e) {
+                    errEl.textContent = 'Error de red o del servidor.';
+                    errEl.hidden = false;
+                } finally {
+                    btn.disabled = false;
+                }
+            });
+
+            function syncAdminTipoPagoEdit() {
+                const tipo = document.querySelector('input[name="adminTipoPagoEdit"]:checked')?.value;
+                const bloque = document.getElementById('adminBloqueNroCuotaEdit');
+                const sel = document.getElementById('adminNroCuotaEdit');
+                if (tipo === 'Cuota') {
+                    bloque.hidden = false;
+                    sel.setAttribute('required', 'required');
+                } else {
+                    bloque.hidden = true;
+                    sel.removeAttribute('required');
+                    sel.value = '';
+                }
+            }
+
+            document.querySelectorAll('input[name="adminTipoPagoEdit"]').forEach((r) => {
+                r.addEventListener('change', syncAdminTipoPagoEdit);
+            });
+
+            document.getElementById('adminBtnIrEditarPago').addEventListener('click', () => {
+                showAdminPanel('edit_pago');
+                document.getElementById('adminErrorEditarPago').hidden = true;
+            });
+            document.getElementById('adminBtnVolverDesdeEditarPago').addEventListener('click', () => showAdminPanel('menu'));
+
+            document.getElementById('adminBtnBuscarEstPago').addEventListener('click', async () => {
+                const errEl = document.getElementById('adminErrorEditarPago');
+                errEl.hidden = true;
+                const q = document.getElementById('adminTextoBusqPago').value.trim();
+                if (!q) {
+                    errEl.textContent = 'Ingrese un término de búsqueda.';
+                    errEl.hidden = false;
+                    return;
+                }
+                const lista = document.getElementById('adminListaEstPago');
+                const msg = document.getElementById('adminMsgEstPago');
+                lista.innerHTML = '<p class="hint" style="padding:12px">Buscando…</p>';
+                lista.hidden = false;
+                msg.hidden = true;
+                adminSelectedPagoId = null;
+                adminSelectedEstPagoNombre = '';
+                document.getElementById('adminBloqueListaPagos').hidden = true;
+                document.getElementById('adminBloqueFormPago').hidden = true;
+                document.getElementById('adminBtnGuardarPago').disabled = true;
+                try {
+                    const params = new URLSearchParams({
+                        campo: document.getElementById('adminCampoBusqPago').value,
+                        q,
+                    });
+                    const r = await fetch('/api/estudiantes/base/buscar?' + params.toString(), {
+                        headers: { Accept: 'application/json' },
+                    });
+                    const j = await r.json();
+                    if (!r.ok) {
+                        lista.innerHTML = '';
+                        lista.hidden = true;
+                        msg.hidden = false;
+                        errEl.textContent = j.errors ? Object.values(j.errors).flat().join(' ') : (j.message || 'Error');
+                        errEl.hidden = false;
+                        return;
+                    }
+                    const rows = j.data || [];
+                    lista.innerHTML = '';
+                    if (!rows.length) {
+                        lista.innerHTML = '<p class="hint" style="padding:12px">No hay resultados.</p>';
+                        return;
+                    }
+                    rows.forEach((row) => {
+                        const b = document.createElement('button');
+                        b.type = 'button';
+                        b.className = 'search-result-item';
+                        b.textContent = row.nombre_completo + ' — Reg. ' + row.RegistroE + ' — CI ' + row.CedulaE;
+                        b.addEventListener('click', async () => {
+                            lista.querySelectorAll('.search-result-item').forEach((x) => x.classList.remove('selected'));
+                            b.classList.add('selected');
+                            adminSelectedEstPagoNombre = row.nombre_completo;
+                            errEl.hidden = true;
+                            const wrap = document.getElementById('adminBloqueListaPagos');
+                            const items = document.getElementById('adminListaPagosItems');
+                            items.innerHTML = '<p class="hint" style="padding:12px">Cargando pagos…</p>';
+                            wrap.hidden = false;
+                            document.getElementById('adminBloqueFormPago').hidden = true;
+                            adminSelectedPagoId = null;
+                            document.getElementById('adminBtnGuardarPago').disabled = true;
+                            try {
+                                const r2 = await fetch('/api/admin/estudiantes/' + row.Id_E + '/pagos', {
+                                    headers: { Accept: 'application/json' },
+                                });
+                                const j2 = await r2.json();
+                                if (!r2.ok) {
+                                    items.innerHTML = '';
+                                    wrap.hidden = true;
+                                    errEl.textContent = j2.message || 'No se pudieron cargar los pagos.';
+                                    errEl.hidden = false;
+                                    return;
+                                }
+                                const pagos = j2.data || [];
+                                items.innerHTML = '';
+                                if (!pagos.length) {
+                                    items.innerHTML = '<p class="hint" style="padding:12px">Este estudiante no tiene pagos registrados.</p>';
+                                    return;
+                                }
+                                pagos.forEach((p) => {
+                                    const pb = document.createElement('button');
+                                    pb.type = 'button';
+                                    pb.className = 'search-result-item';
+                                    const tipoLabel =
+                                        p.TipoP === 'Cuota' ? 'Cuota ' + p.NroP : p.TipoP === 'Matricula' ? 'Matrícula' : 'Defensa';
+                                    pb.textContent =
+                                        p.curso_etiqueta +
+                                        ' — ' +
+                                        tipoLabel +
+                                        ' — Bs ' +
+                                        Number(p.MontoP).toFixed(2) +
+                                        ' — ' +
+                                        p.FechaP;
+                                    pb.addEventListener('click', () => {
+                                        items.querySelectorAll('.search-result-item').forEach((x) => x.classList.remove('selected'));
+                                        pb.classList.add('selected');
+                                        adminSelectedPagoId = p.Id_P;
+                                        document.getElementById('adminResumenPagoEdit').textContent =
+                                            'Estudiante: ' + adminSelectedEstPagoNombre + ' — ' + p.curso_etiqueta;
+                                        document.getElementById('adminMontoPagoEdit').value = p.MontoP;
+                                        document.querySelectorAll('input[name="adminTipoPagoEdit"]').forEach((radio) => {
+                                            radio.checked = radio.value === p.TipoP;
+                                        });
+                                        if (p.TipoP === 'Cuota') {
+                                            document.getElementById('adminNroCuotaEdit').value = String(p.NroP);
+                                        } else {
+                                            document.getElementById('adminNroCuotaEdit').value = '';
+                                        }
+                                        document.getElementById('adminFechaPagoEdit').value = p.FechaP;
+                                        document.getElementById('adminNroCompEdit').value = p.NroCompP;
+                                        document.getElementById('adminCuentaEdit').value = p.CuentaTransfP;
+                                        syncAdminTipoPagoEdit();
+                                        document.getElementById('adminBloqueFormPago').hidden = false;
+                                        document.getElementById('adminBtnGuardarPago').disabled = false;
+                                        errEl.hidden = true;
+                                    });
+                                    items.appendChild(pb);
+                                });
+                            } catch (e2) {
+                                items.innerHTML = '';
+                                wrap.hidden = true;
+                                errEl.textContent = 'Error al cargar los pagos.';
+                                errEl.hidden = false;
+                            }
+                        });
+                        lista.appendChild(b);
+                    });
+                } catch (e) {
+                    lista.innerHTML = '';
+                    lista.hidden = true;
+                    msg.hidden = false;
+                    errEl.textContent = 'No se pudo completar la búsqueda.';
+                    errEl.hidden = false;
+                }
+            });
+
+            function resolverAdminNroP() {
+                const tipo = document.querySelector('input[name="adminTipoPagoEdit"]:checked')?.value;
+                if (tipo === 'Matricula') return 0;
+                if (tipo === 'Defensa') return 6;
+                if (tipo === 'Cuota') return Number(document.getElementById('adminNroCuotaEdit').value);
+                return null;
+            }
+
+            document.getElementById('adminBtnGuardarPago').addEventListener('click', async () => {
+                const errEl = document.getElementById('adminErrorEditarPago');
+                errEl.hidden = true;
+                if (!adminSelectedPagoId) return;
+                const tipo = document.querySelector('input[name="adminTipoPagoEdit"]:checked')?.value;
+                if (!tipo) {
+                    errEl.textContent = 'Seleccione el tipo de pago.';
+                    errEl.hidden = false;
+                    return;
+                }
+                if (tipo === 'Cuota' && !document.getElementById('adminNroCuotaEdit').value) {
+                    errEl.textContent = 'Seleccione el número de cuota (1 a 5).';
+                    errEl.hidden = false;
+                    return;
+                }
+                const monto = document.getElementById('adminMontoPagoEdit').value;
+                const fecha = document.getElementById('adminFechaPagoEdit').value;
+                const nroComp = document.getElementById('adminNroCompEdit').value;
+                const cuenta = document.getElementById('adminCuentaEdit').value.trim();
+                if (!monto || Number(monto) <= 0) {
+                    errEl.textContent = 'Ingrese un monto válido.';
+                    errEl.hidden = false;
+                    return;
+                }
+                if (!fecha) {
+                    errEl.textContent = 'Seleccione la fecha.';
+                    errEl.hidden = false;
+                    return;
+                }
+                if (!nroComp || Number(nroComp) < 1) {
+                    errEl.textContent = 'Ingrese el número de comprobante.';
+                    errEl.hidden = false;
+                    return;
+                }
+                if (!cuenta) {
+                    errEl.textContent = 'Ingrese el número de cuenta bancaria.';
+                    errEl.hidden = false;
+                    return;
+                }
+                const NroP = resolverAdminNroP();
+                if (NroP === null || (tipo === 'Cuota' && (NroP < 1 || NroP > 5))) {
+                    errEl.textContent = 'Datos de cuota incompletos.';
+                    errEl.hidden = false;
+                    return;
+                }
+                const btn = document.getElementById('adminBtnGuardarPago');
+                btn.disabled = true;
+                try {
+                    const r = await fetch('/api/admin/pagos/' + adminSelectedPagoId, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Accept: 'application/json',
+                            'X-CSRF-TOKEN': csrf,
+                        },
+                        body: JSON.stringify({
+                            MontoP: Number(monto),
+                            TipoP: tipo,
+                            NroP,
+                            FechaP: fecha,
+                            NroCompP: Number(nroComp),
+                            CuentaTransfP: cuenta,
+                        }),
+                    });
+                    const j = await r.json();
+                    if (!r.ok) {
+                        errEl.textContent = j.errors ? Object.values(j.errors).flat().join(' ') : (j.message || 'Error');
+                        errEl.hidden = false;
+                        return;
+                    }
+                    window.alert(j.message || 'Pago actualizado.');
+                    resetAdminModal();
+                } catch (e) {
+                    errEl.textContent = 'Error de red o del servidor.';
+                    errEl.hidden = false;
+                } finally {
+                    btn.disabled = false;
                 }
             });
         })();

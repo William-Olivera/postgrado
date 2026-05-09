@@ -71,6 +71,131 @@ class PagoRegistroController extends Controller
         return response()->json(['data' => $rows]);
     }
 
+    public function buscarEstudiantesBase(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'campo' => ['required', Rule::in(['nombre', 'registro', 'cedula'])],
+            'q' => ['required', 'string', 'min:1', 'max:120'],
+        ]);
+
+        $q = trim($validated['q']);
+
+        $query = Estudiante::query();
+
+        match ($validated['campo']) {
+            'nombre' => $query->where(function ($w) use ($q) {
+                $like = '%'.str_replace(['%', '_'], ['\\%', '\\_'], $q).'%';
+                $w->where('nombreE', 'like', $like)
+                    ->orWhere('paternoE', 'like', $like)
+                    ->orWhere('maternoE', 'like', $like)
+                    ->orWhereRaw(
+                        "CONCAT(COALESCE(nombreE,''), ' ', COALESCE(paternoE,''), ' ', COALESCE(maternoE,'')) LIKE ?",
+                        [$like]
+                    );
+            }),
+            'registro' => $query->where('RegistroE', $q),
+            'cedula' => $query->where('CedulaE', 'like', '%'.str_replace(['%', '_'], ['\\%', '\\_'], $q).'%'),
+        };
+
+        $rows = $query
+            ->orderBy('paternoE')
+            ->orderBy('nombreE')
+            ->limit(30)
+            ->get()
+            ->map(fn (Estudiante $e) => [
+                'Id_E' => $e->Id_E,
+                'nombre_completo' => $e->nombreCompleto(),
+                'RegistroE' => $e->RegistroE,
+                'CedulaE' => $e->CedulaE,
+            ]);
+
+        return response()->json(['data' => $rows]);
+    }
+
+    public function storeInscripcion(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'tipo_estudiante' => ['required', Rule::in(['nuevo', 'antiguo'])],
+            'Id_Cur' => ['required', 'integer', 'exists:Curso,Id_Cur'],
+            'Id_E' => ['nullable', 'integer', 'exists:Estudiante,Id_E'],
+            'estudiante' => ['nullable', 'array'],
+            'estudiante.nombreE' => ['required_if:tipo_estudiante,nuevo', 'string', 'max:50'],
+            'estudiante.paternoE' => ['required_if:tipo_estudiante,nuevo', 'string', 'max:20'],
+            'estudiante.maternoE' => ['nullable', 'string', 'max:20'],
+            'estudiante.RegistroE' => ['required_if:tipo_estudiante,nuevo', 'integer'],
+            'estudiante.CedulaE' => ['required_if:tipo_estudiante,nuevo', 'string', 'max:20'],
+            'estudiante.TelefonoE' => ['required_if:tipo_estudiante,nuevo', 'string', 'max:20'],
+            'estudiante.DescuentoE' => ['required_if:tipo_estudiante,nuevo', 'integer', 'min:0', 'max:100'],
+        ]);
+
+        $idE = null;
+
+        if ($validated['tipo_estudiante'] === 'antiguo') {
+            $idE = (int) ($validated['Id_E'] ?? 0);
+            if ($idE <= 0) {
+                throw ValidationException::withMessages([
+                    'Id_E' => ['Seleccione un estudiante registrado.'],
+                ]);
+            }
+        } else {
+            $estudianteData = $validated['estudiante'];
+
+            $yaExisteRegistro = Estudiante::query()
+                ->where('RegistroE', $estudianteData['RegistroE'])
+                ->exists();
+            if ($yaExisteRegistro) {
+                throw ValidationException::withMessages([
+                    'estudiante.RegistroE' => ['Ya existe un estudiante con ese número de registro.'],
+                ]);
+            }
+
+            $yaExisteCi = Estudiante::query()
+                ->where('CedulaE', $estudianteData['CedulaE'])
+                ->exists();
+            if ($yaExisteCi) {
+                throw ValidationException::withMessages([
+                    'estudiante.CedulaE' => ['Ya existe un estudiante con esa cédula.'],
+                ]);
+            }
+
+            $nuevo = Estudiante::query()->create([
+                'nombreE' => trim($estudianteData['nombreE']),
+                'paternoE' => trim($estudianteData['paternoE']),
+                'maternoE' => isset($estudianteData['maternoE']) ? trim((string) $estudianteData['maternoE']) : null,
+                'RegistroE' => (int) $estudianteData['RegistroE'],
+                'CedulaE' => trim($estudianteData['CedulaE']),
+                'TelefonoE' => trim($estudianteData['TelefonoE']),
+                'DescuentoE' => (int) $estudianteData['DescuentoE'],
+            ]);
+            $idE = (int) $nuevo->Id_E;
+        }
+
+        $inscrito = DB::table('Inscripcion')
+            ->where('Id_E', $idE)
+            ->where('Id_Cur', $validated['Id_Cur'])
+            ->exists();
+        if ($inscrito) {
+            throw ValidationException::withMessages([
+                'Id_Cur' => ['El estudiante ya está inscrito en el curso seleccionado.'],
+            ]);
+        }
+
+        DB::table('Inscripcion')->insert([
+            'Id_E' => $idE,
+            'Id_Cur' => (int) $validated['Id_Cur'],
+            'FechaIns' => now()->toDateString(),
+            'EstadoIns' => 'Impaga',
+        ]);
+
+        return response()->json([
+            'message' => 'Inscripción registrada correctamente.',
+            'data' => [
+                'Id_E' => $idE,
+                'Id_Cur' => (int) $validated['Id_Cur'],
+            ],
+        ], 201);
+    }
+
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([

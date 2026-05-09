@@ -476,13 +476,117 @@
         <h1>Sistema de gestion contable de la escuela de Post-grado de la F.I.N.O.R</h1>
 
         <section class="actions">
-            <button class="action-btn" type="button">Iniciar inscripcion</button>
+            <button class="action-btn" type="button" id="btnAbrirInscripcion">Iniciar inscripcion</button>
             <button class="action-btn" type="button" id="btnAbrirRegistrarPago">Registrar pago</button>
             <button class="action-btn" type="button" id="btnAbrirControlSaldos">Control de saldos</button>
             <button class="action-btn" type="button">Buscar pago</button>
             <button class="action-btn action-btn--admin" type="button">Administrar datos</button>
         </section>
     </main>
+
+    <div id="modalInscripcion" class="modal-overlay" hidden>
+        <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="modalInscripcionTitle">
+            <header class="modal-header">
+                <h2 id="modalInscripcionTitle">Iniciar inscripción</h2>
+                <button type="button" class="modal-close" id="btnCerrarModalInscripcion" aria-label="Cerrar">&times;</button>
+            </header>
+            <div class="modal-body">
+                <div class="field">
+                    <label for="selectCursoInscripcion">Curso <span aria-hidden="true">*</span></label>
+                    <select id="selectCursoInscripcion" required>
+                        <option value="">Cargando cursos…</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <span>Tipo de estudiante <span aria-hidden="true">*</span></span>
+                    <div class="radio-group">
+                        <label><input type="radio" name="tipo_estudiante_ins" value="antiguo" checked> Antiguo</label>
+                        <label><input type="radio" name="tipo_estudiante_ins" value="nuevo"> Nuevo</label>
+                    </div>
+                </div>
+
+                <div id="panelInscripcionAntiguo" class="panel-modo">
+                    <div class="field-row">
+                        <div class="field">
+                            <label for="campoBusquedaInsAnt">Buscar por</label>
+                            <select id="campoBusquedaInsAnt">
+                                <option value="nombre">Nombre (nombre / apellidos)</option>
+                                <option value="registro">Número de registro</option>
+                                <option value="cedula">Cédula</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label for="textoBusquedaInsAnt">Término</label>
+                            <input type="text" id="textoBusquedaInsAnt" autocomplete="off" placeholder="Escriba y pulse Buscar">
+                        </div>
+                    </div>
+                    <div class="btn-row">
+                        <button type="button" class="btn-secondary" id="btnBuscarInscripcionAnt">Buscar</button>
+                    </div>
+                    <div class="field">
+                        <label>Estudiante</label>
+                        <div id="listaResultadosInsAnt" class="search-results" hidden></div>
+                        <p id="msgInscripcionAnt" class="hint">Busque y seleccione un estudiante registrado.</p>
+                    </div>
+                </div>
+
+                <form id="formInscripcionNuevo" class="panel-modo" hidden novalidate>
+                    <div class="field">
+                        <label for="insNombreE">Nombre(s) <span aria-hidden="true">*</span></label>
+                        <input type="text" id="insNombreE" maxlength="50" required>
+                    </div>
+                    <div class="field-row">
+                        <div class="field">
+                            <label for="insPaternoE">Apellido paterno <span aria-hidden="true">*</span></label>
+                            <input type="text" id="insPaternoE" maxlength="20" required>
+                        </div>
+                        <div class="field">
+                            <label for="insMaternoE">Apellido materno</label>
+                            <input type="text" id="insMaternoE" maxlength="20">
+                        </div>
+                    </div>
+                    <div class="field-row">
+                        <div class="field">
+                            <label for="insRegistroE">Registro (ID universitario) <span aria-hidden="true">*</span></label>
+                            <input type="number" id="insRegistroE" min="1" step="1" required>
+                        </div>
+                        <div class="field">
+                            <label for="insCedulaE">C.I. (cédula de identidad) <span aria-hidden="true">*</span></label>
+                            <input type="text" id="insCedulaE" maxlength="20" required>
+                        </div>
+                    </div>
+                    <div class="field-row">
+                        <div class="field">
+                            <label for="insTelefonoE">Teléfono <span aria-hidden="true">*</span></label>
+                            <input type="text" id="insTelefonoE" maxlength="20" required>
+                        </div>
+                        <div class="field">
+                            <label for="insDescuentoE">Descuento (%) <span aria-hidden="true">*</span></label>
+                            <select id="insDescuentoE" required>
+                                <option value="0">0</option>
+                                <option value="10">10</option>
+                                <option value="20">20</option>
+                                <option value="30">30</option>
+                                <option value="40">40</option>
+                                <option value="50">50</option>
+                                <option value="60">60</option>
+                                <option value="70">70</option>
+                                <option value="80">80</option>
+                                <option value="90">90</option>
+                                <option value="100">100</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+
+                <p id="errorInscripcion" class="form-error" hidden></p>
+                <div class="btn-row">
+                    <button type="button" class="btn-primary" id="btnConfirmarInscripcion">Confirmar inscripción</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div id="modalRegistroPago" class="modal-overlay" hidden>
         <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="modalPagoTitle">
@@ -706,6 +810,231 @@
             document.body.classList.toggle('dark', isDark);
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
         });
+
+        (function () {
+            const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+            const modal = document.getElementById('modalInscripcion');
+            const btnAbrir = document.getElementById('btnAbrirInscripcion');
+            const btnCerrar = document.getElementById('btnCerrarModalInscripcion');
+            const selectCurso = document.getElementById('selectCursoInscripcion');
+            const panelAntiguo = document.getElementById('panelInscripcionAntiguo');
+            const panelNuevo = document.getElementById('formInscripcionNuevo');
+            const campoBusquedaAnt = document.getElementById('campoBusquedaInsAnt');
+            const textoBusquedaAnt = document.getElementById('textoBusquedaInsAnt');
+            const btnBuscarAnt = document.getElementById('btnBuscarInscripcionAnt');
+            const listaAnt = document.getElementById('listaResultadosInsAnt');
+            const msgAnt = document.getElementById('msgInscripcionAnt');
+            const error = document.getElementById('errorInscripcion');
+            const btnConfirmar = document.getElementById('btnConfirmarInscripcion');
+            const radiosTipo = document.querySelectorAll('input[name="tipo_estudiante_ins"]');
+            const insNombreE = document.getElementById('insNombreE');
+            const insPaternoE = document.getElementById('insPaternoE');
+            const insMaternoE = document.getElementById('insMaternoE');
+            const insRegistroE = document.getElementById('insRegistroE');
+            const insCedulaE = document.getElementById('insCedulaE');
+            const insTelefonoE = document.getElementById('insTelefonoE');
+            const insDescuentoE = document.getElementById('insDescuentoE');
+
+            let selectedOldStudent = null;
+
+            function tipoActual() {
+                return document.querySelector('input[name="tipo_estudiante_ins"]:checked')?.value || 'antiguo';
+            }
+
+            function syncTipoUi() {
+                const t = tipoActual();
+                panelAntiguo.hidden = t !== 'antiguo';
+                panelNuevo.hidden = t !== 'nuevo';
+                error.hidden = true;
+            }
+
+            function showError(msg) {
+                error.textContent = msg;
+                error.hidden = false;
+            }
+
+            function resetForm() {
+                selectedOldStudent = null;
+                error.hidden = true;
+                listaAnt.innerHTML = '';
+                listaAnt.hidden = true;
+                msgAnt.hidden = false;
+                textoBusquedaAnt.value = '';
+                panelNuevo.reset();
+                document.querySelector('input[name="tipo_estudiante_ins"][value="antiguo"]').checked = true;
+                syncTipoUi();
+            }
+
+            async function cargarCursos() {
+                selectCurso.innerHTML = '<option value="">Cargando…</option>';
+                try {
+                    const r = await fetch('/api/cursos', { headers: { Accept: 'application/json' } });
+                    const j = await r.json();
+                    if (!r.ok) throw new Error(j.message || 'Error al cargar cursos');
+                    selectCurso.innerHTML = '<option value="">Seleccione un curso…</option>';
+                    (j.data || []).forEach((c) => {
+                        const opt = document.createElement('option');
+                        opt.value = c.Id_Cur;
+                        opt.textContent = c.NombreCur + ' — ' + c.TipoCur + ' v' + c.VersionCur + ' (Ed. ' + c.EdicionCur + ')';
+                        selectCurso.appendChild(opt);
+                    });
+                } catch (e) {
+                    selectCurso.innerHTML = '<option value="">Error al cargar cursos</option>';
+                }
+            }
+
+            function openModal() {
+                resetForm();
+                modal.hidden = false;
+                document.body.style.overflow = 'hidden';
+                cargarCursos();
+            }
+
+            function closeModal() {
+                modal.hidden = true;
+                document.body.style.overflow = '';
+            }
+
+            radiosTipo.forEach((r) => r.addEventListener('change', syncTipoUi));
+
+            btnAbrir.addEventListener('click', openModal);
+            btnCerrar.addEventListener('click', closeModal);
+
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) closeModal();
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && !modal.hidden) closeModal();
+            });
+
+            btnBuscarAnt.addEventListener('click', async () => {
+                error.hidden = true;
+                const q = textoBusquedaAnt.value.trim();
+                if (!q) {
+                    showError('Ingrese un término de búsqueda.');
+                    return;
+                }
+                listaAnt.innerHTML = '<p class="hint" style="padding:12px">Buscando…</p>';
+                listaAnt.hidden = false;
+                msgAnt.hidden = true;
+                selectedOldStudent = null;
+                try {
+                    const params = new URLSearchParams({ campo: campoBusquedaAnt.value, q });
+                    const r = await fetch('/api/estudiantes/base/buscar?' + params.toString(), {
+                        headers: { Accept: 'application/json' },
+                    });
+                    const j = await r.json();
+                    if (!r.ok) {
+                        const err = j.errors ? Object.values(j.errors).flat().join(' ') : (j.message || 'Error en la búsqueda');
+                        listaAnt.innerHTML = '';
+                        listaAnt.hidden = true;
+                        msgAnt.hidden = false;
+                        showError(err);
+                        return;
+                    }
+                    const rows = j.data || [];
+                    listaAnt.innerHTML = '';
+                    if (!rows.length) {
+                        listaAnt.innerHTML = '<p class="hint" style="padding:12px">No hay resultados.</p>';
+                        return;
+                    }
+                    rows.forEach((row) => {
+                        const b = document.createElement('button');
+                        b.type = 'button';
+                        b.className = 'search-result-item';
+                        b.textContent = row.nombre_completo + ' — Reg. ' + row.RegistroE + ' — CI ' + row.CedulaE;
+                        b.addEventListener('click', () => {
+                            listaAnt.querySelectorAll('.search-result-item').forEach((x) => x.classList.remove('selected'));
+                            b.classList.add('selected');
+                            selectedOldStudent = row;
+                        });
+                        listaAnt.appendChild(b);
+                    });
+                } catch (err) {
+                    listaAnt.innerHTML = '';
+                    listaAnt.hidden = true;
+                    msgAnt.hidden = false;
+                    showError('No se pudo completar la búsqueda.');
+                }
+            });
+
+            btnConfirmar.addEventListener('click', async () => {
+                error.hidden = true;
+                const idCur = Number(selectCurso.value);
+                if (!idCur) {
+                    showError('Seleccione un curso.');
+                    return;
+                }
+
+                const tipo = tipoActual();
+                let payload = {
+                    tipo_estudiante: tipo,
+                    Id_Cur: idCur,
+                };
+
+                if (tipo === 'antiguo') {
+                    if (!selectedOldStudent?.Id_E) {
+                        showError('Seleccione un estudiante antiguo de la lista.');
+                        return;
+                    }
+                    payload.Id_E = Number(selectedOldStudent.Id_E);
+                } else {
+                    const nombreE = insNombreE.value.trim();
+                    const paternoE = insPaternoE.value.trim();
+                    const maternoE = insMaternoE.value.trim();
+                    const registroE = Number(insRegistroE.value);
+                    const cedulaE = insCedulaE.value.trim();
+                    const telefonoE = insTelefonoE.value.trim();
+                    const descuentoE = Number(insDescuentoE.value);
+
+                    if (!nombreE || !paternoE || !registroE || !cedulaE || !telefonoE) {
+                        showError('Complete todos los campos obligatorios del estudiante nuevo.');
+                        return;
+                    }
+                    if (descuentoE < 0 || descuentoE > 100 || descuentoE % 10 !== 0) {
+                        showError('Seleccione un descuento válido (0 a 100, de 10 en 10).');
+                        return;
+                    }
+
+                    payload.estudiante = {
+                        nombreE: nombreE,
+                        paternoE: paternoE,
+                        maternoE: maternoE || null,
+                        RegistroE: registroE,
+                        CedulaE: cedulaE,
+                        TelefonoE: telefonoE,
+                        DescuentoE: descuentoE,
+                    };
+                }
+
+                btnConfirmar.disabled = true;
+                try {
+                    const r = await fetch('/api/inscripciones', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Accept: 'application/json',
+                            'X-CSRF-TOKEN': csrf,
+                        },
+                        body: JSON.stringify(payload),
+                    });
+                    const j = await r.json();
+                    if (!r.ok) {
+                        const msg = j.errors ? Object.values(j.errors).flat().join(' ') : (j.message || 'No se pudo registrar la inscripción.');
+                        showError(msg);
+                        return;
+                    }
+                    window.alert(j.message || 'Inscripción registrada correctamente.');
+                    closeModal();
+                    resetForm();
+                } catch (e) {
+                    showError('Error de red o del servidor.');
+                } finally {
+                    btnConfirmar.disabled = false;
+                }
+            });
+        })();
 
         (function () {
             const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';

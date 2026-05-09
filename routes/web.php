@@ -10,6 +10,8 @@ Route::get('/', function () {
 
 Route::get('/api/cursos', [PagoRegistroController::class, 'cursos']);
 Route::get('/api/estudiantes/buscar', [PagoRegistroController::class, 'buscarEstudiantes']);
+Route::get('/api/estudiantes/base/buscar', [PagoRegistroController::class, 'buscarEstudiantesBase']);
+Route::post('/api/inscripciones', [PagoRegistroController::class, 'storeInscripcion']);
 Route::post('/api/pagos', [PagoRegistroController::class, 'store']);
 
 Route::get('/api/saldos/estudiantes/buscar', [ControlSaldosController::class, 'buscarEstudiantes']);

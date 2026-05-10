@@ -20,7 +20,26 @@ class PagoRegistroController extends Controller
             ->orderBy('NombreCur')
             ->get(['Id_Cur', 'NombreCur', 'TipoCur', 'VersionCur', 'EdicionCur']);
 
-        return response()->json(['data' => $cursos]);
+        $planes = PlanPago::query()
+            ->whereIn('Id_Cur', $cursos->pluck('Id_Cur'))
+            ->get()
+            ->keyBy('Id_Cur');
+
+        $data = $cursos->map(function (Curso $c) use ($planes) {
+            $p = $planes->get($c->Id_Cur);
+
+            return [
+                'Id_Cur' => $c->Id_Cur,
+                'NombreCur' => $c->NombreCur,
+                'TipoCur' => $c->TipoCur,
+                'VersionCur' => $c->VersionCur,
+                'EdicionCur' => $c->EdicionCur,
+                'MontoTotalPP' => $p !== null ? (float) $p->MontoTotalPP : null,
+                'TotalCuotasPP' => $p !== null ? (int) $p->TotalCuotasPP : null,
+            ];
+        });
+
+        return response()->json(['data' => $data]);
     }
 
     public function buscarEstudiantes(Request $request): JsonResponse
@@ -207,6 +226,7 @@ class PagoRegistroController extends Controller
             'FechaP' => ['required', 'date'],
             'NroCompP' => ['required', 'integer', 'min:1'],
             'CuentaTransfP' => ['required', 'string', 'max:50'],
+            'comprobante' => ['nullable', 'file', 'image', 'max:5120'],
         ]);
 
         $inscrito = DB::table('Inscripcion')
@@ -258,6 +278,11 @@ class PagoRegistroController extends Controller
             ]);
         }
 
+        $archivoComprobante = null;
+        if ($request->hasFile('comprobante')) {
+            $archivoComprobante = $request->file('comprobante')->store('comprobantes_pago', 'public');
+        }
+
         $pago = Pago::query()->create([
             'Id_PP' => $plan->Id_PP,
             'Id_E' => $validated['Id_E'],
@@ -268,6 +293,7 @@ class PagoRegistroController extends Controller
             'TipoP' => $validated['TipoP'],
             'NroCompP' => $validated['NroCompP'],
             'CuentaTransfP' => $validated['CuentaTransfP'],
+            'ArchivoComprobanteP' => $archivoComprobante,
         ]);
 
         return response()->json([

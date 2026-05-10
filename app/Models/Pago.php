@@ -17,7 +17,7 @@ class Pago extends Model
 
     protected $fillable = [
         'Id_PP', 'Id_E', 'Id_Cur', 'FechaP', 'MontoP', 'NroP', 'TipoP',
-        'NroCompP', 'CuentaTransfP',
+        'NroCompP', 'CuentaTransfP', 'ArchivoComprobanteP',
     ];
 
     public function planPago(): BelongsTo

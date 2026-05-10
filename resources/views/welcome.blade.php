@@ -673,6 +673,11 @@
                             <label for="cuentaBancaria">Número de cuenta bancaria <span aria-hidden="true">*</span></label>
                             <input type="text" id="cuentaBancaria" name="CuentaTransfP" maxlength="50" required placeholder="Cuenta desde la que transfirió">
                         </div>
+                        <div class="field">
+                            <label for="comprobantePagoRegistro">Comprobante de pago (imagen, opcional)</label>
+                            <input type="file" id="comprobantePagoRegistro" name="comprobante" accept="image/*">
+                            <p class="hint">Puede adjuntar una foto o escaneado del comprobante. No es obligatorio.</p>
+                        </div>
                         <p id="errorPaso2" class="form-error" hidden></p>
                         <div class="btn-row">
                             <button type="button" class="btn-secondary" id="btnVolverPaso1">Atrás</button>
@@ -804,41 +809,9 @@
                 <div id="adminPanelMenu">
                     <p class="hint">Seleccione una acción.</p>
                     <div class="btn-row" style="flex-wrap: wrap; gap: 10px">
-                        <button type="button" class="btn-primary" id="adminBtnIrCrearCurso">Crear curso</button>
                         <button type="button" class="btn-primary" id="adminBtnIrEditarCurso">Editar curso</button>
                         <button type="button" class="btn-primary" id="adminBtnIrEditarEst">Editar estudiante</button>
                         <button type="button" class="btn-primary" id="adminBtnIrEditarPago">Editar pago</button>
-                    </div>
-                </div>
-
-                <div id="adminPanelCrearCurso" class="panel-modo" hidden>
-                    <p class="hint">Complete los datos del nuevo curso.</p>
-                    <div class="field">
-                        <label for="adminNombreCurNuevo">Nombre del curso <span aria-hidden="true">*</span></label>
-                        <input type="text" id="adminNombreCurNuevo" maxlength="100" autocomplete="off">
-                    </div>
-                    <div class="field">
-                        <label for="adminTipoCurNuevo">Tipo <span aria-hidden="true">*</span></label>
-                        <select id="adminTipoCurNuevo">
-                            <option value="">Seleccione…</option>
-                            <option value="Maestria">Maestría</option>
-                            <option value="Diplomado">Diplomado</option>
-                        </select>
-                    </div>
-                    <div class="field-row">
-                        <div class="field">
-                            <label for="adminEdicionCurNuevo">Edición <span aria-hidden="true">*</span></label>
-                            <input type="number" id="adminEdicionCurNuevo" min="1" step="1" value="1">
-                        </div>
-                        <div class="field">
-                            <label for="adminVersionCurNuevo">Versión <span aria-hidden="true">*</span></label>
-                            <input type="number" id="adminVersionCurNuevo" min="1" step="1" value="1">
-                        </div>
-                    </div>
-                    <p id="adminErrorCrearCurso" class="form-error" hidden></p>
-                    <div class="btn-row">
-                        <button type="button" class="btn-secondary" id="adminBtnVolverDesdeCrearCurso">Volver</button>
-                        <button type="button" class="btn-primary" id="adminBtnGuardarCrearCurso">Guardar curso</button>
                     </div>
                 </div>
 
@@ -871,10 +844,20 @@
                             <input type="number" id="adminVersionCurEdit" min="1" step="1">
                         </div>
                     </div>
+                    <div class="field-row">
+                        <div class="field">
+                            <label for="adminMontoTotalCurEdit">Costo total <span aria-hidden="true">*</span></label>
+                            <input type="number" id="adminMontoTotalCurEdit" step="0.01" min="0.01" placeholder="0.00" autocomplete="off">
+                        </div>
+                        <div class="field">
+                            <label for="adminTotalCuotasCurEdit">Total de cuotas <span aria-hidden="true">*</span></label>
+                            <input type="number" id="adminTotalCuotasCurEdit" min="1" step="1" autocomplete="off">
+                        </div>
+                    </div>
                     <p id="adminErrorEditarCurso" class="form-error" hidden></p>
                     <div class="btn-row">
                         <button type="button" class="btn-secondary" id="adminBtnVolverDesdeEditarCurso">Volver</button>
-                        <button type="button" class="btn-primary" id="adminBtnGuardarEditarCurso">Guardar cambios</button>
+                        <button type="button" class="btn-primary" id="adminBtnGuardarEditarCurso">Guardar curso</button>
                     </div>
                 </div>
 
@@ -1020,6 +1003,17 @@
                         <div class="field">
                             <label for="adminCuentaEdit">Número de cuenta bancaria <span aria-hidden="true">*</span></label>
                             <input type="text" id="adminCuentaEdit" maxlength="50" placeholder="Cuenta desde la que transfirió">
+                        </div>
+                        <div class="field" id="adminComprobantePagoActualWrap" hidden>
+                            <span>Comprobante actual</span>
+                            <p class="hint" style="margin-top:6px">
+                                <a id="adminComprobantePagoActualLink" href="#" target="_blank" rel="noopener noreferrer">Abrir imagen del comprobante</a>
+                            </p>
+                        </div>
+                        <div class="field">
+                            <label for="adminComprobantePagoEdit">Comprobante de pago (imagen, opcional)</label>
+                            <input type="file" id="adminComprobantePagoEdit" accept="image/*">
+                            <p class="hint">Si elige un archivo, reemplaza el comprobante guardado (si había uno).</p>
                         </div>
                     </div>
                     <p id="adminErrorEditarPago" class="form-error" hidden></p>
@@ -1296,6 +1290,7 @@
             const nroCuotaSelect = document.getElementById('nroCuotaSelect');
             const errorPaso2 = document.getElementById('errorPaso2');
             const btnRegistrar = document.getElementById('btnRegistrarPagoEnvio');
+            const inputComprobanteRegistro = document.getElementById('comprobantePagoRegistro');
             const stepBadges = document.querySelectorAll('[data-step-indicator]');
 
             let selectedStudent = null;
@@ -1534,26 +1529,27 @@
                     showErrorPaso2('Datos de cuota incompletos.');
                     return;
                 }
-                const payload = {
-                    Id_E: selectedStudent.Id_E,
-                    Id_Cur: Number(idCur),
-                    MontoP: Number(monto),
-                    TipoP: tipo,
-                    NroP: nroP,
-                    FechaP: fecha,
-                    NroCompP: Number(nroComp),
-                    CuentaTransfP: cuenta,
-                };
+                const fd = new FormData();
+                fd.append('Id_E', String(selectedStudent.Id_E));
+                fd.append('Id_Cur', String(idCur));
+                fd.append('MontoP', String(monto));
+                fd.append('TipoP', tipo);
+                fd.append('NroP', String(nroP));
+                fd.append('FechaP', fecha);
+                fd.append('NroCompP', String(nroComp));
+                fd.append('CuentaTransfP', cuenta);
+                if (inputComprobanteRegistro.files && inputComprobanteRegistro.files[0]) {
+                    fd.append('comprobante', inputComprobanteRegistro.files[0]);
+                }
                 btnRegistrar.disabled = true;
                 try {
                     const r = await fetch('/api/pagos', {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/json',
                             Accept: 'application/json',
                             'X-CSRF-TOKEN': csrf,
                         },
-                        body: JSON.stringify(payload),
+                        body: fd,
                     });
                     const j = await r.json();
                     if (!r.ok) {
@@ -1806,7 +1802,6 @@
             const btnAbrir = document.getElementById('btnAbrirAdminDatos');
             const btnCerrar = document.getElementById('btnCerrarAdminDatos');
             const panelMenu = document.getElementById('adminPanelMenu');
-            const panelCrear = document.getElementById('adminPanelCrearCurso');
             const panelEditCur = document.getElementById('adminPanelEditarCurso');
             const panelEditEst = document.getElementById('adminPanelEditarEst');
             const panelEditPago = document.getElementById('adminPanelEditarPago');
@@ -1818,7 +1813,6 @@
 
             function showAdminPanel(which) {
                 panelMenu.hidden = which !== 'menu';
-                panelCrear.hidden = which !== 'crear';
                 panelEditCur.hidden = which !== 'edit_cur';
                 panelEditEst.hidden = which !== 'edit_est';
                 panelEditPago.hidden = which !== 'edit_pago';
@@ -1826,14 +1820,9 @@
 
             function resetAdminModal() {
                 showAdminPanel('menu');
-                document.getElementById('adminErrorCrearCurso').hidden = true;
                 document.getElementById('adminErrorEditarCurso').hidden = true;
                 document.getElementById('adminErrorEditarEst').hidden = true;
                 document.getElementById('adminErrorEditarPago').hidden = true;
-                document.getElementById('adminNombreCurNuevo').value = '';
-                document.getElementById('adminTipoCurNuevo').value = '';
-                document.getElementById('adminEdicionCurNuevo').value = '1';
-                document.getElementById('adminVersionCurNuevo').value = '1';
                 adminCursosCache = [];
                 adminSelectedEstId = null;
                 adminSelectedPagoId = null;
@@ -1858,6 +1847,9 @@
                 document.getElementById('adminBloqueNroCuotaEdit').hidden = true;
                 document.getElementById('adminNroCuotaEdit').value = '';
                 document.getElementById('adminNroCuotaEdit').removeAttribute('required');
+                document.getElementById('adminComprobantePagoEdit').value = '';
+                document.getElementById('adminComprobantePagoActualWrap').hidden = true;
+                document.getElementById('adminComprobantePagoActualLink').removeAttribute('href');
             }
 
             function openModal() {
@@ -1880,103 +1872,81 @@
                 if (e.key === 'Escape' && !modal.hidden) closeModal();
             });
 
-            document.getElementById('adminBtnIrCrearCurso').addEventListener('click', () => {
-                showAdminPanel('crear');
-                document.getElementById('adminErrorCrearCurso').hidden = true;
-            });
-            document.getElementById('adminBtnVolverDesdeCrearCurso').addEventListener('click', () => showAdminPanel('menu'));
-
             document.getElementById('adminBtnIrEditarCurso').addEventListener('click', async () => {
                 showAdminPanel('edit_cur');
                 document.getElementById('adminErrorEditarCurso').hidden = true;
                 const sel = document.getElementById('adminSelectCursoEdit');
+                const btnGuardar = document.getElementById('adminBtnGuardarEditarCurso');
                 sel.innerHTML = '<option value="">Cargando…</option>';
                 try {
                     const r = await fetch('/api/cursos', { headers: { Accept: 'application/json' } });
                     const j = await r.json();
                     if (!r.ok) throw new Error();
                     adminCursosCache = j.data || [];
-                    sel.innerHTML = '<option value="">Seleccione un curso…</option>';
+                    sel.innerHTML = '';
+                    const optNew = document.createElement('option');
+                    optNew.value = '__new__';
+                    optNew.textContent = 'Añadir un nuevo curso...';
+                    sel.appendChild(optNew);
                     adminCursosCache.forEach((c) => {
                         const opt = document.createElement('option');
                         opt.value = c.Id_Cur;
                         opt.textContent = c.NombreCur + ' — ' + c.TipoCur + ' v' + c.VersionCur + ' (Ed. ' + c.EdicionCur + ')';
                         sel.appendChild(opt);
                     });
-                    sel.value = '';
-                    document.getElementById('adminNombreCurEdit').value = '';
-                    document.getElementById('adminTipoCurEdit').value = '';
-                    document.getElementById('adminEdicionCurEdit').value = '';
-                    document.getElementById('adminVersionCurEdit').value = '';
+                    sel.value = '__new__';
+                    sel.dispatchEvent(new Event('change'));
                 } catch (e) {
                     sel.innerHTML = '<option value="">Error al cargar</option>';
+                    btnGuardar.textContent = 'Guardar curso';
                 }
             });
 
             document.getElementById('adminSelectCursoEdit').addEventListener('change', () => {
-                const id = Number(document.getElementById('adminSelectCursoEdit').value);
+                const raw = document.getElementById('adminSelectCursoEdit').value;
+                const btnGuardar = document.getElementById('adminBtnGuardarEditarCurso');
+                if (raw === '__new__') {
+                    btnGuardar.textContent = 'Guardar curso';
+                    document.getElementById('adminNombreCurEdit').value = '';
+                    document.getElementById('adminTipoCurEdit').value = '';
+                    document.getElementById('adminEdicionCurEdit').value = '1';
+                    document.getElementById('adminVersionCurEdit').value = '1';
+                    document.getElementById('adminMontoTotalCurEdit').value = '';
+                    document.getElementById('adminTotalCuotasCurEdit').value = '';
+                    return;
+                }
+                btnGuardar.textContent = 'Guardar cambios';
+                const id = Number(raw);
                 const c = adminCursosCache.find((x) => Number(x.Id_Cur) === id);
                 if (!c) {
                     document.getElementById('adminNombreCurEdit').value = '';
                     document.getElementById('adminTipoCurEdit').value = '';
                     document.getElementById('adminEdicionCurEdit').value = '';
                     document.getElementById('adminVersionCurEdit').value = '';
+                    document.getElementById('adminMontoTotalCurEdit').value = '';
+                    document.getElementById('adminTotalCuotasCurEdit').value = '';
                     return;
                 }
                 document.getElementById('adminNombreCurEdit').value = c.NombreCur;
                 document.getElementById('adminTipoCurEdit').value = c.TipoCur;
                 document.getElementById('adminEdicionCurEdit').value = c.EdicionCur;
                 document.getElementById('adminVersionCurEdit').value = c.VersionCur;
+                document.getElementById('adminMontoTotalCurEdit').value =
+                    c.MontoTotalPP != null && c.MontoTotalPP !== '' ? c.MontoTotalPP : '';
+                document.getElementById('adminTotalCuotasCurEdit').value =
+                    c.TotalCuotasPP != null && c.TotalCuotasPP !== '' ? c.TotalCuotasPP : '';
             });
 
             document.getElementById('adminBtnVolverDesdeEditarCurso').addEventListener('click', () => showAdminPanel('menu'));
 
-            document.getElementById('adminBtnGuardarCrearCurso').addEventListener('click', async () => {
-                const errEl = document.getElementById('adminErrorCrearCurso');
-                errEl.hidden = true;
-                const NombreCur = document.getElementById('adminNombreCurNuevo').value.trim();
-                const TipoCur = document.getElementById('adminTipoCurNuevo').value;
-                const EdicionCur = Number(document.getElementById('adminEdicionCurNuevo').value);
-                const VersionCur = Number(document.getElementById('adminVersionCurNuevo').value);
-                if (!NombreCur || !TipoCur || !EdicionCur || !VersionCur) {
-                    errEl.textContent = 'Complete todos los campos obligatorios.';
-                    errEl.hidden = false;
-                    return;
-                }
-                const btn = document.getElementById('adminBtnGuardarCrearCurso');
-                btn.disabled = true;
-                try {
-                    const r = await fetch('/api/admin/cursos', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            Accept: 'application/json',
-                            'X-CSRF-TOKEN': csrf,
-                        },
-                        body: JSON.stringify({ NombreCur, TipoCur, EdicionCur, VersionCur }),
-                    });
-                    const j = await r.json();
-                    if (!r.ok) {
-                        errEl.textContent = j.errors ? Object.values(j.errors).flat().join(' ') : (j.message || 'Error');
-                        errEl.hidden = false;
-                        return;
-                    }
-                    window.alert(j.message || 'Curso creado.');
-                    resetAdminModal();
-                } catch (e) {
-                    errEl.textContent = 'Error de red o del servidor.';
-                    errEl.hidden = false;
-                } finally {
-                    btn.disabled = false;
-                }
-            });
-
             document.getElementById('adminBtnGuardarEditarCurso').addEventListener('click', async () => {
                 const errEl = document.getElementById('adminErrorEditarCurso');
                 errEl.hidden = true;
-                const id = Number(document.getElementById('adminSelectCursoEdit').value);
-                if (!id) {
-                    errEl.textContent = 'Seleccione un curso.';
+                const sel = document.getElementById('adminSelectCursoEdit');
+                const isNew = sel.value === '__new__';
+                const idCur = isNew ? null : Number(sel.value);
+                if (!isNew && (!idCur || Number.isNaN(idCur))) {
+                    errEl.textContent = 'Seleccione un curso o la opción para añadir uno nuevo.';
                     errEl.hidden = false;
                     return;
                 }
@@ -1984,22 +1954,37 @@
                 const TipoCur = document.getElementById('adminTipoCurEdit').value;
                 const EdicionCur = Number(document.getElementById('adminEdicionCurEdit').value);
                 const VersionCur = Number(document.getElementById('adminVersionCurEdit').value);
+                const MontoTotalPP = parseFloat(String(document.getElementById('adminMontoTotalCurEdit').value));
+                const TotalCuotasPP = parseInt(String(document.getElementById('adminTotalCuotasCurEdit').value), 10);
                 if (!NombreCur || !TipoCur || !EdicionCur || !VersionCur) {
                     errEl.textContent = 'Complete todos los campos obligatorios.';
                     errEl.hidden = false;
                     return;
                 }
+                if (!Number.isFinite(MontoTotalPP) || MontoTotalPP < 0.01) {
+                    errEl.textContent = 'Indique un costo total válido (mín. 0,01).';
+                    errEl.hidden = false;
+                    return;
+                }
+                if (!Number.isFinite(TotalCuotasPP) || TotalCuotasPP < 1) {
+                    errEl.textContent = 'Indique un total de cuotas válido (entero ≥ 1).';
+                    errEl.hidden = false;
+                    return;
+                }
+                const body = { NombreCur, TipoCur, EdicionCur, VersionCur, MontoTotalPP, TotalCuotasPP };
                 const btn = document.getElementById('adminBtnGuardarEditarCurso');
                 btn.disabled = true;
                 try {
-                    const r = await fetch('/api/admin/cursos/' + id, {
-                        method: 'PUT',
+                    const url = isNew ? '/api/admin/cursos' : '/api/admin/cursos/' + idCur;
+                    const method = isNew ? 'POST' : 'PUT';
+                    const r = await fetch(url, {
+                        method,
                         headers: {
                             'Content-Type': 'application/json',
                             Accept: 'application/json',
                             'X-CSRF-TOKEN': csrf,
                         },
-                        body: JSON.stringify({ NombreCur, TipoCur, EdicionCur, VersionCur }),
+                        body: JSON.stringify(body),
                     });
                     const j = await r.json();
                     if (!r.ok) {
@@ -2007,7 +1992,7 @@
                         errEl.hidden = false;
                         return;
                     }
-                    window.alert(j.message || 'Curso actualizado.');
+                    window.alert(j.message || (isNew ? 'Curso creado.' : 'Curso actualizado.'));
                     resetAdminModal();
                 } catch (e) {
                     errEl.textContent = 'Error de red o del servidor.';
@@ -2288,6 +2273,16 @@
                                         document.getElementById('adminFechaPagoEdit').value = p.FechaP;
                                         document.getElementById('adminNroCompEdit').value = p.NroCompP;
                                         document.getElementById('adminCuentaEdit').value = p.CuentaTransfP;
+                                        document.getElementById('adminComprobantePagoEdit').value = '';
+                                        const wrapComp = document.getElementById('adminComprobantePagoActualWrap');
+                                        const linkComp = document.getElementById('adminComprobantePagoActualLink');
+                                        if (p.comprobante_url) {
+                                            linkComp.href = p.comprobante_url;
+                                            wrapComp.hidden = false;
+                                        } else {
+                                            linkComp.removeAttribute('href');
+                                            wrapComp.hidden = true;
+                                        }
                                         syncAdminTipoPagoEdit();
                                         document.getElementById('adminBloqueFormPago').hidden = false;
                                         document.getElementById('adminBtnGuardarPago').disabled = false;
@@ -2369,21 +2364,24 @@
                 const btn = document.getElementById('adminBtnGuardarPago');
                 btn.disabled = true;
                 try {
+                    const fd = new FormData();
+                    fd.append('MontoP', String(monto));
+                    fd.append('TipoP', tipo);
+                    fd.append('NroP', String(NroP));
+                    fd.append('FechaP', fecha);
+                    fd.append('NroCompP', String(nroComp));
+                    fd.append('CuentaTransfP', cuenta);
+                    const compFile = document.getElementById('adminComprobantePagoEdit').files[0];
+                    if (compFile) {
+                        fd.append('comprobante', compFile);
+                    }
                     const r = await fetch('/api/admin/pagos/' + adminSelectedPagoId, {
                         method: 'PATCH',
                         headers: {
-                            'Content-Type': 'application/json',
                             Accept: 'application/json',
                             'X-CSRF-TOKEN': csrf,
                         },
-                        body: JSON.stringify({
-                            MontoP: Number(monto),
-                            TipoP: tipo,
-                            NroP,
-                            FechaP: fecha,
-                            NroCompP: Number(nroComp),
-                            CuentaTransfP: cuenta,
-                        }),
+                        body: fd,
                     });
                     const j = await r.json();
                     if (!r.ok) {

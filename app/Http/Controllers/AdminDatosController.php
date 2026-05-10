@@ -9,6 +9,7 @@ use App\Models\PlanPago;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -21,6 +22,8 @@ class AdminDatosController extends Controller
             'TipoCur' => ['required', Rule::in(['Maestria', 'Diplomado'])],
             'EdicionCur' => ['required', 'integer', 'min:1'],
             'VersionCur' => ['required', 'integer', 'min:1'],
+            'MontoTotalPP' => ['required', 'numeric', 'min:0.01'],
+            'TotalCuotasPP' => ['required', 'integer', 'min:1'],
         ]);
 
         $curso = Curso::query()->create([
@@ -28,6 +31,12 @@ class AdminDatosController extends Controller
             'TipoCur' => $validated['TipoCur'],
             'EdicionCur' => (int) $validated['EdicionCur'],
             'VersionCur' => (int) $validated['VersionCur'],
+        ]);
+
+        PlanPago::query()->create([
+            'Id_Cur' => $curso->Id_Cur,
+            'MontoTotalPP' => $validated['MontoTotalPP'],
+            'TotalCuotasPP' => (int) $validated['TotalCuotasPP'],
         ]);
 
         return response()->json([
@@ -38,6 +47,8 @@ class AdminDatosController extends Controller
                 'TipoCur' => $curso->TipoCur,
                 'VersionCur' => $curso->VersionCur,
                 'EdicionCur' => $curso->EdicionCur,
+                'MontoTotalPP' => (float) $validated['MontoTotalPP'],
+                'TotalCuotasPP' => (int) $validated['TotalCuotasPP'],
             ],
         ], 201);
     }
@@ -54,6 +65,8 @@ class AdminDatosController extends Controller
             'TipoCur' => ['required', Rule::in(['Maestria', 'Diplomado'])],
             'EdicionCur' => ['required', 'integer', 'min:1'],
             'VersionCur' => ['required', 'integer', 'min:1'],
+            'MontoTotalPP' => ['required', 'numeric', 'min:0.01'],
+            'TotalCuotasPP' => ['required', 'integer', 'min:1'],
         ]);
 
         $curso->update([
@@ -63,6 +76,11 @@ class AdminDatosController extends Controller
             'VersionCur' => (int) $validated['VersionCur'],
         ]);
 
+        $plan = PlanPago::query()->firstOrNew(['Id_Cur' => $curso->Id_Cur]);
+        $plan->MontoTotalPP = $validated['MontoTotalPP'];
+        $plan->TotalCuotasPP = (int) $validated['TotalCuotasPP'];
+        $plan->save();
+
         return response()->json([
             'message' => 'Curso actualizado correctamente.',
             'data' => [
@@ -71,6 +89,8 @@ class AdminDatosController extends Controller
                 'TipoCur' => $curso->TipoCur,
                 'VersionCur' => $curso->VersionCur,
                 'EdicionCur' => $curso->EdicionCur,
+                'MontoTotalPP' => (float) $plan->MontoTotalPP,
+                'TotalCuotasPP' => (int) $plan->TotalCuotasPP,
             ],
         ]);
     }
@@ -164,6 +184,9 @@ class AdminDatosController extends Controller
                 'FechaP' => $p->FechaP,
                 'NroCompP' => $p->NroCompP,
                 'CuentaTransfP' => $p->CuentaTransfP,
+                'comprobante_url' => $p->ArchivoComprobanteP
+                    ? Storage::disk('public')->url($p->ArchivoComprobanteP)
+                    : null,
             ]);
 
         return response()->json(['data' => $rows]);
@@ -183,6 +206,7 @@ class AdminDatosController extends Controller
             'FechaP' => ['required', 'date'],
             'NroCompP' => ['required', 'integer', 'min:1'],
             'CuentaTransfP' => ['required', 'string', 'max:50'],
+            'comprobante' => ['nullable', 'file', 'image', 'max:5120'],
         ]);
 
         $idE = (int) $pago->Id_E;
@@ -238,14 +262,23 @@ class AdminDatosController extends Controller
             ]);
         }
 
-        $pago->update([
+        $attrs = [
             'MontoP' => $validated['MontoP'],
             'TipoP' => $validated['TipoP'],
             'NroP' => $validated['NroP'],
             'FechaP' => $validated['FechaP'],
             'NroCompP' => $validated['NroCompP'],
             'CuentaTransfP' => $validated['CuentaTransfP'],
-        ]);
+        ];
+
+        if ($request->hasFile('comprobante')) {
+            if ($pago->ArchivoComprobanteP) {
+                Storage::disk('public')->delete($pago->ArchivoComprobanteP);
+            }
+            $attrs['ArchivoComprobanteP'] = $request->file('comprobante')->store('comprobantes_pago', 'public');
+        }
+
+        $pago->update($attrs);
 
         return response()->json(['message' => 'Pago actualizado correctamente.']);
     }

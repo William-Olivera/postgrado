@@ -2,40 +2,47 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Estudiante extends Model
 {
-    protected $table = 'Estudiante';
-
-    protected $primaryKey = 'Id_E';
-
-    public $incrementing = true;
-
-    public $timestamps = false;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'nombreE', 'paternoE', 'maternoE', 'RegistroE', 'CedulaE',
-        'TelefonoE', 'DireccionE', 'DescuentoE', 'ObservacionE', 'ActivoE',
+        'nombres',
+        'paterno',
+        'materno',
+        'registro',
+        'cedula',
+        'celular',
+        'observaciones',
+        'descuento_porcentaje',
+        'activo',
     ];
 
-    public function cursos(): BelongsToMany
+    protected $casts = [
+        'descuento_porcentaje' => 'integer',
+        'activo' => 'boolean',
+    ];
+
+    public function getNombreCompletoAttribute(): string
     {
-        return $this->belongsToMany(Curso::class, 'Inscripcion', 'Id_E', 'Id_Cur')
-            ->withPivot('FechaIns', 'EstadoIns');
+        return trim("{$this->nombres} {$this->paterno} {$this->materno}");
     }
 
-    public function pagos(): HasMany
+    public function getInicialesAttribute(): string
     {
-        return $this->hasMany(Pago::class, 'Id_E', 'Id_E');
+        $iniciales = strtoupper(substr($this->nombres, 0, 1));
+        if ($this->paterno) {
+            $iniciales .= strtoupper(substr($this->paterno, 0, 1));
+        }
+        return $iniciales;
     }
 
-    public function nombreCompleto(): string
+    public function inscripciones()
     {
-        $m = $this->maternoE ? ' '.$this->maternoE : '';
-
-        return trim("{$this->nombreE} {$this->paternoE}{$m}");
+        return $this->hasMany(Inscripcion::class);
     }
 }

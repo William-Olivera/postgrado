@@ -24,7 +24,7 @@
             </div>
         </div>
 
-        <form method="POST" action="{{ route('pagos.store') }}" id="formPago">
+        <form method="POST" action="{{ route('pagos.store') }}" id="formPago" enctype="multipart/form-data">
             @csrf
             <input type="hidden" name="detalle_plan_pago_id" id="detalle_plan_pago_id" value="{{ old('detalle_plan_pago_id') }}">
 
@@ -73,28 +73,41 @@
                     </div>
                 </div>
 
-                <div class="form-field">
-                    <label>Nº de Comprobante</label>
-                    <div class="input-icon-wrap">
-                        <i class="fas fa-file-invoice"></i>
-                        <input type="text" name="nro_comprobante" id="nroComprobante" placeholder="Ej. 21649751" value="{{ old('nro_comprobante') }}" disabled>
+                <div style="display:flex; gap:16px; margin-bottom:16px;">
+                    <div class="form-field" style="flex:1;">
+                        <label>Nº de Comprobante</label>
+                        <div class="input-icon-wrap">
+                            <i class="fas fa-file-invoice"></i>
+                            <input type="text" name="nro_comprobante" id="nroComprobante" placeholder="Ej. 21649751" value="{{ old('nro_comprobante') }}" disabled>
+                        </div>
+                    </div>
+                    <div class="form-field" style="flex:1;">
+                        <label>Monto a Cobrar (Bs)</label>
+                        <div class="input-icon-wrap">
+                            <i class="fas fa-coins"></i>
+                            <input type="number" name="monto" id="montoPago" step="0.01" min="0.01" placeholder="0.00" value="{{ old('monto') }}" readonly>
+                        </div>
+                        <small class="saldo-hint" id="saldoHint"></small>
                     </div>
                 </div>
 
-                <div class="form-field">
-                    <label>Monto a Cobrar (Bs)</label>
-                    <div class="input-icon-wrap">
-                        <i class="fas fa-coins"></i>
-                        <input type="number" name="monto" id="montoPago" step="0.01" min="0.01" placeholder="0.00" value="{{ old('monto') }}" readonly>
+                <div style="display:flex; gap:16px; margin-bottom:16px;">
+                    <div class="form-field" style="flex:1;">
+                        <label>Fecha de Pago</label>
+                        <div class="input-icon-wrap">
+                            <i class="fas fa-calendar"></i>
+                            <input type="date" name="fecha_pago" id="fechaPago" value="{{ old('fecha_pago', date('Y-m-d')) }}" disabled>
+                        </div>
                     </div>
-                    <small class="saldo-hint" id="saldoHint"></small>
-                </div>
-
-                <div class="form-field">
-                    <label>Fecha de Pago</label>
-                    <div class="input-icon-wrap">
-                        <i class="fas fa-calendar"></i>
-                        <input type="date" name="fecha_pago" id="fechaPago" value="{{ old('fecha_pago', date('Y-m-d')) }}" disabled>
+                    <div class="form-field" style="flex:1;">
+                        <label>Adjuntar Comprobante</label>
+                        <div style="display:flex; gap:8px;">
+                            <input type="file" name="archivo_adjunto" id="archivoAdjunto" accept=".pdf,.jpg,.jpeg,.png" style="display:none;" disabled>
+                            <button type="button" class="btn-adjuntar" id="btnAdjuntar" onclick="document.getElementById('archivoAdjunto').click()" disabled>
+                                <i class="fas fa-paperclip"></i> Añadir Imagen/PDF
+                            </button>
+                            <span id="nombreArchivo" style="color:#64748b; font-size:12px; align-self:center; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></span>
+                        </div>
                     </div>
                 </div>
 
@@ -237,6 +250,14 @@
     .btn-registrar:disabled { opacity: 0.4; cursor: not-allowed; }
     .btn-registrar:not(:disabled):hover { background: #10b981; transform: translateY(-1px); }
 
+    .btn-adjuntar {
+        padding: 12px 16px; background: rgba(99, 102, 241, 0.2); border: 1px solid rgba(99, 102, 241, 0.3);
+        border-radius: 12px; color: #818cf8; font-weight: 600; cursor: pointer; transition: all 0.2s;
+        display: flex; align-items: center; gap: 8px;
+    }
+    .btn-adjuntar:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-adjuntar:not(:disabled):hover { background: rgba(99, 102, 241, 0.3); border-color: rgba(99, 102, 241, 0.5); }
+
     .resumen-data { border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px; }
     .resumen-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px; }
     .resumen-label { color: #94a3b8; }
@@ -267,6 +288,9 @@
     const saldoHint = document.getElementById('saldoHint');
     const resumenContainer = document.getElementById('resumenTransaccion');
     const estadoCuentaContainer = document.getElementById('estadoCuenta');
+    const archivoAdjunto = document.getElementById('archivoAdjunto');
+    const btnAdjuntar = document.getElementById('btnAdjuntar');
+    const nombreArchivo = document.getElementById('nombreArchivo');
 
     buscarInput.addEventListener('input', function() {
         clearTimeout(timeoutBusqueda);
@@ -316,7 +340,7 @@
                 }
 
                 // Habilitar campos
-                [tipoPago, nroComprobante, fechaPago, observacion].forEach(el => el.disabled = false);
+                [tipoPago, nroComprobante, fechaPago, observacion, archivoAdjunto, btnAdjuntar].forEach(el => el.disabled = false);
 
                 // Actualizar paneles
                 actualizarEstadoCuenta();
@@ -357,6 +381,10 @@
         fechaPago.disabled = true;
         observacion.value = '';
         observacion.disabled = true;
+        archivoAdjunto.disabled = true;
+        btnAdjuntar.disabled = true;
+        archivoAdjunto.value = '';
+        nombreArchivo.textContent = '';
         saldoHint.textContent = '';
         btnRegistrar.disabled = true;
 
@@ -639,6 +667,15 @@
 
     // Solo lectura para monto (bloquea teclado)
     montoPago.addEventListener('keydown', e => e.preventDefault());
+
+    // Manejar selección de archivo
+    archivoAdjunto.addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+            nombreArchivo.textContent = this.files[0].name;
+        } else {
+            nombreArchivo.textContent = '';
+        }
+    });
 
     document.addEventListener('click', e => {
         if (!e.target.closest('#buscarEstudiante') && !e.target.closest('#resultadosEstudiante')) {

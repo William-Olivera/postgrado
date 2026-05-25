@@ -19,6 +19,7 @@ class Pago extends Model
         'monto',
         'nro_comprobante',
         'observacion',
+        'archivo_adjunto',
     ];
 
     protected $casts = [

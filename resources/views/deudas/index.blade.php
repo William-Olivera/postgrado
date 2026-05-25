@@ -262,6 +262,78 @@
     .badge-pendiente { background: rgba(245,158,11,0.15); color: #fbbf24; }
     .badge-parcial { background: rgba(59,130,246,0.15); color: #60a5fa; }
 
+    /* Action buttons styling */
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+    .action-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        border: 1px solid rgba(255,255,255,0.1);
+        background: rgba(30,41,59,0.6);
+        color: #94a3b8;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        position: relative;
+        text-decoration: none;
+    }
+    .action-btn:hover {
+        background: rgba(99,102,241,0.2);
+        border-color: rgba(99,102,241,0.4);
+        color: #818cf8;
+        transform: translateY(-2px);
+    }
+    .action-btn.delete:hover {
+        background: rgba(239,68,68,0.2);
+        border-color: rgba(239,68,68,0.4);
+        color: #f87171;
+    }
+    .action-btn.add:hover {
+        background: rgba(34,197,94,0.2);
+        border-color: rgba(34,197,94,0.4);
+        color: #4ade80;
+    }
+    .action-btn i {
+        font-size: 14px;
+    }
+    .action-btn .tooltip {
+        position: absolute;
+        bottom: calc(100% + 8px);
+        left: 50%;
+        transform: translateX(-50%);
+        background: #1e293b;
+        color: #f1f5f9;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 11px;
+        font-weight: 600;
+        white-space: nowrap;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.2s;
+        border: 1px solid rgba(255,255,255,0.1);
+        z-index: 10;
+    }
+    .action-btn:hover .tooltip {
+        opacity: 1;
+        visibility: visible;
+    }
+    .action-btn .tooltip::after {
+        content: '';
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        border: 6px solid transparent;
+        border-top-color: #1e293b;
+    }
+
     /* Scrollbar personalizado para el modal */
     .modal-content::-webkit-scrollbar { width: 6px; }
     .modal-content::-webkit-scrollbar-track { background: transparent; }
@@ -297,6 +369,69 @@
         </div>
     </div>
 </div>
+
+<!-- MODAL PARA SUBIR ARCHIVO -->
+<div id="subirArchivoModal" class="modal-overlay" onclick="if(event.target === this) cerrarModalSubir()">
+    <div class="modal-content" style="max-width:500px;">
+        <div style="padding:32px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+                <h3 style="font-size:20px; font-weight:700; color:#fff;">Adjuntar Archivo</h3>
+                <button onclick="cerrarModalSubir()" class="btn-close-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <form id="formSubirArchivo" enctype="multipart/form-data">
+                @csrf
+                <input type="hidden" id="pagoIdSubir" name="pago_id">
+
+                <div style="margin-bottom:20px;">
+                    <label style="display:block; font-size:13px; color:#94a3b8; margin-bottom:8px;">Seleccionar archivo (PDF, JPG, JPEG, PNG)</label>
+                    <input type="file" id="archivoSubir" name="archivo_adjunto" accept=".pdf,.jpg,.jpeg,.png" required
+                           style="width:100%; padding:12px; background:rgba(15,23,42,0.6); border:1px solid rgba(255,255,255,0.08); border-radius:12px; color:#f1f5f9; font-size:14px;">
+                </div>
+
+                <div id="subirError" style="display:none; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.2); color:#fca5a5; padding:12px; border-radius:12px; font-size:13px; margin-bottom:16px;"></div>
+
+                <div style="display:flex; gap:12px;">
+                    <button type="button" onclick="cerrarModalSubir()" style="flex:1; padding:12px; background:rgba(51,65,85,0.4); border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:#94a3b8; font-weight:600; cursor:pointer;">
+                        Cancelar
+                    </button>
+                    <button type="submit" id="btnSubir" style="flex:1; padding:12px; background:#3b82f6; border:none; border-radius:12px; color:#fff; font-weight:600; cursor:pointer;">
+                        Subir Archivo
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL DE CONFIRMACIÓN PARA ELIMINAR -->
+<div id="confirmarEliminarModal" class="modal-overlay" onclick="if(event.target === this) cerrarModalEliminar()">
+    <div class="modal-content" style="max-width:400px;">
+        <div style="padding:32px; text-align:center;">
+            <div style="width:64px; height:64px; background:rgba(239,68,68,0.1); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 20px;">
+                <i class="fas fa-trash" style="font-size:24px; color:#ef4444;"></i>
+            </div>
+            <h3 style="font-size:20px; font-weight:700; color:#fff; margin-bottom:12px;">¿Eliminar archivo?</h3>
+            <p style="font-size:14px; color:#94a3b8; margin-bottom:24px;">Esta acción no se puede deshacer.</p>
+            <div style="display:flex; gap:12px;">
+                <button onclick="cerrarModalEliminar()" style="flex:1; padding:12px; background:rgba(51,65,85,0.4); border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:#94a3b8; font-weight:600; cursor:pointer;">
+                    Cancelar
+                </button>
+                <button id="btnConfirmarEliminar" style="flex:1; padding:12px; background:#ef4444; border:none; border-radius:12px; color:#fff; font-weight:600; cursor:pointer;">
+                    Eliminar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- NOTIFICACIÓN TOAST -->
+<div id="toast" style="position:fixed; bottom:24px; right:24px; background:#1e293b; border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:16px 20px; display:flex; align-items:center; gap:12px; transform:translateY(100px); opacity:0; transition:all 0.3s ease; z-index:10000;">
+    <i id="toastIcon" class="fas fa-check-circle" style="font-size:20px; color:#4ade80;"></i>
+    <span id="toastMessage" style="color:#f1f5f9; font-size:14px; font-weight:500;"></span>
+</div>
 @endsection
 
 @push('scripts')
@@ -328,6 +463,7 @@
         fetch(`{{ url('deudas') }}/${id}`)
             .then(r => r.json())
             .then(data => {
+                console.log('Datos recibidos:', data);
                 const est = data.estudiante;
                 document.getElementById('modalEstNombre').textContent = est.nombre_completo;
                 document.getElementById('modalEstDatos').textContent = `CI: ${est.cedula} · Registro: ${est.registro}`;
@@ -387,6 +523,33 @@
                                                         <div class="info-label">Monto</div>
                                                         <div class="info-value">Bs ${c.pagos[0].monto.toFixed(2)}</div>
                                                     </div>
+                                                    <div class="info-box" style="display:flex; align-items:center; justify-content:center;">
+                                                        <div class="action-buttons" style="gap:8px;">
+                                                            ${c.pagos[0].archivo_adjunto ? `
+                                                                <a href="/storage/${c.pagos[0].archivo_adjunto}" target="_blank" class="action-btn">
+                                                                    <i class="fas fa-eye"></i>
+                                                                    <span class="tooltip">Ver</span>
+                                                                </a>
+                                                                <a href="/storage/${c.pagos[0].archivo_adjunto}" download class="action-btn">
+                                                                    <i class="fas fa-download"></i>
+                                                                    <span class="tooltip">Descargar</span>
+                                                                </a>
+                                                            ` : `
+                                                                <button onclick="añadirArchivo(${c.pagos[0].id})" class="action-btn add">
+                                                                    <i class="fas fa-plus"></i>
+                                                                    <span class="tooltip">Añadir</span>
+                                                                </button>
+                                                                <button class="action-btn" style="opacity:0.3; cursor:not-allowed;" disabled>
+                                                                    <i class="fas fa-download"></i>
+                                                                    <span class="tooltip">Descargar</span>
+                                                                </button>
+                                                            `}
+                                                            <button onclick="eliminarArchivo(${c.pagos[0].id})" class="action-btn delete">
+                                                                <i class="fas fa-trash"></i>
+                                                                <span class="tooltip">Eliminar</span>
+                                                            </button>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             ` : `
                                                 <div style="text-align:center; padding:12px; background:rgba(255,255,255,0.02); border-radius:12px; color:#64748b; font-size:12px;">
@@ -426,5 +589,127 @@
     }
 
     document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarDetalle(); });
+
+    let pagoIdEliminar = null;
+
+    function eliminarArchivo(pagoId) {
+        pagoIdEliminar = pagoId;
+        document.getElementById('confirmarEliminarModal').classList.add('active');
+    }
+
+    function cerrarModalEliminar() {
+        document.getElementById('confirmarEliminarModal').classList.remove('active');
+        pagoIdEliminar = null;
+    }
+
+    document.getElementById('btnConfirmarEliminar').addEventListener('click', function() {
+        if (!pagoIdEliminar) return;
+
+        fetch(`{{ url('pagos/eliminar-archivo') }}/${pagoIdEliminar}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                mostrarNotificacion('Archivo eliminado correctamente', 'success');
+                cerrarModalEliminar();
+                const estId = document.querySelector('.estudiante-card[onclick*="abrirDetalle"]')?.dataset.id;
+                if (estId) abrirDetalle(parseInt(estId));
+            } else {
+                mostrarNotificacion('Error al eliminar el archivo: ' + (data.message || 'Error desconocido'), 'error');
+            }
+        })
+        .catch(err => {
+            mostrarNotificacion('Error al eliminar el archivo', 'error');
+            console.error(err);
+        });
+    });
+
+    function añadirArchivo(pagoId) {
+        document.getElementById('pagoIdSubir').value = pagoId;
+        document.getElementById('archivoSubir').value = '';
+        document.getElementById('subirError').style.display = 'none';
+        document.getElementById('subirArchivoModal').classList.add('active');
+    }
+
+    function cerrarModalSubir() {
+        document.getElementById('subirArchivoModal').classList.remove('active');
+    }
+
+    document.getElementById('formSubirArchivo').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const pagoId = document.getElementById('pagoIdSubir').value;
+        const archivo = document.getElementById('archivoSubir').files[0];
+
+        if (!archivo) {
+            document.getElementById('subirError').textContent = 'Por favor seleccione un archivo';
+            document.getElementById('subirError').style.display = 'block';
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('archivo_adjunto', archivo);
+
+        const btn = document.getElementById('btnSubir');
+        btn.disabled = true;
+        btn.textContent = 'Subiendo...';
+
+        fetch(`{{ url('pagos/subir-archivo') }}/${pagoId}`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            },
+            body: formData
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                mostrarNotificacion('Archivo subido correctamente', 'success');
+                cerrarModalSubir();
+                const estId = document.querySelector('.estudiante-card[onclick*="abrirDetalle"]')?.dataset.id;
+                if (estId) abrirDetalle(parseInt(estId));
+            } else {
+                document.getElementById('subirError').textContent = data.message || 'Error al subir el archivo';
+                document.getElementById('subirError').style.display = 'block';
+            }
+        })
+        .catch(err => {
+            document.getElementById('subirError').textContent = 'Error al subir el archivo';
+            document.getElementById('subirError').style.display = 'block';
+        })
+        .finally(() => {
+            btn.disabled = false;
+            btn.textContent = 'Subir Archivo';
+        });
+    });
+
+    function mostrarNotificacion(mensaje, tipo = 'success') {
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toastMessage');
+        const toastIcon = document.getElementById('toastIcon');
+
+        toastMessage.textContent = mensaje;
+
+        if (tipo === 'success') {
+            toastIcon.className = 'fas fa-check-circle';
+            toastIcon.style.color = '#4ade80';
+        } else {
+            toastIcon.className = 'fas fa-exclamation-circle';
+            toastIcon.style.color = '#f87171';
+        }
+
+        toast.style.transform = 'translateY(0)';
+        toast.style.opacity = '1';
+
+        setTimeout(() => {
+            toast.style.transform = 'translateY(100px)';
+            toast.style.opacity = '0';
+        }, 3000);
+    }
+
 </script>
 @endpush

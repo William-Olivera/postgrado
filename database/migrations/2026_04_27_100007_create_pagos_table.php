@@ -16,6 +16,7 @@ return new class extends Migration
             $table->decimal('monto', 10, 2);
             $table->string('nro_comprobante', 50);
             $table->text('observacion')->nullable();
+            $table->string('archivo_adjunto')->nullable();
             $table->timestamps();
         });
     }

@@ -18,6 +18,7 @@ class StoreRequest extends FormRequest
             'monto'                => 'required|numeric|min:0.01',
             'nro_comprobante'      => 'required|string|max:50',
             'observacion'          => 'nullable|string',
+            'archivo_adjunto'      => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
         ];
     }
 }

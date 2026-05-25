@@ -63,8 +63,10 @@ Route::middleware('auth')->group(function () {
     Route::get('pagos', [PagoController::class, 'index'])->name('pagos.index');
     Route::post('pagos', [PagoController::class, 'store'])->name('pagos.store');
     Route::get('pagos/{pago}', [PagoController::class, 'show'])->name('pagos.show');
+    Route::post('pagos/subir-archivo/{pago}', [PagoController::class, 'subirArchivo'])->name('pagos.subir-archivo');
     Route::get('api/pagos/buscar-estudiante', [PagoController::class, 'buscarEstudiante'])->name('pagos.buscar');
     Route::get('api/pagos/cuotas/{estudiante}', [PagoController::class, 'cuotasPendientes'])->name('pagos.cuotas');
+    Route::delete('pagos/eliminar-archivo/{pago}', [PagoController::class, 'eliminarArchivo'])->name('pagos.eliminar-archivo');
 
     // --- DOCUMENTOS ---
 

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\DetallePlanPago;
 use App\Models\Pago;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class PagoService implements Contracts\PagoServiceInterface
 {
@@ -17,6 +18,15 @@ class PagoService implements Contracts\PagoServiceInterface
                 throw new \InvalidArgumentException('El monto excede el saldo pendiente de la cuota.');
             }
 
+            $archivoAdjunto = null;
+            if (isset($data['archivo_adjunto']) && $data['archivo_adjunto']) {
+                \Log::info('Archivo recibido', ['archivo' => $data['archivo_adjunto']]);
+                $archivoAdjunto = $data['archivo_adjunto']->store('pagos', 'public');
+                \Log::info('Archivo guardado', ['ruta' => $archivoAdjunto]);
+            } else {
+                \Log::info('No se recibió archivo adjunto');
+            }
+
             return Pago::create([
                 'detalle_plan_pago_id' => $detalle->id,
                 'inscripcion_id' => $detalle->planPago->inscripcion_id,
@@ -24,6 +34,7 @@ class PagoService implements Contracts\PagoServiceInterface
                 'monto' => $data['monto'],
                 'nro_comprobante' => $data['nro_comprobante'],
                 'observacion' => $data['observacion'] ?? null,
+                'archivo_adjunto' => $archivoAdjunto,
             ]);
         });
     }

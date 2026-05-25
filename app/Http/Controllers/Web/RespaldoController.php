@@ -56,10 +56,27 @@ class RespaldoController extends Controller
             // Crear archivo ZIP
             $zip = new ZipArchive();
             if ($zip->open($zipFilePath, ZipArchive::CREATE) === true) {
-                // Agregar base de datos SQLite
-                $dbPath = database_path('database.sqlite');
-                if (File::exists($dbPath)) {
-                    $zip->addFile($dbPath, 'database.sqlite');
+                // Exportar base de datos MySQL usando mysqldump
+                $mysqlConfig = config('database.connections.mysql');
+                $sqlFileName = "backup_mysql_{$fecha}.sql";
+                $sqlFilePath = $backupPath . '/' . $sqlFileName;
+
+                $command = sprintf(
+                    'mysqldump -h%s -P%s -u%s -p%s %s > %s',
+                    $mysqlConfig['host'],
+                    $mysqlConfig['port'],
+                    $mysqlConfig['username'],
+                    $mysqlConfig['password'],
+                    $mysqlConfig['database'],
+                    $sqlFilePath
+                );
+
+                exec($command, $output, $returnVar);
+
+                if (File::exists($sqlFilePath)) {
+                    $zip->addFile($sqlFilePath, $sqlFileName);
+                    // Eliminar archivo temporal SQL después de agregarlo al ZIP
+                    File::delete($sqlFilePath);
                 }
 
                 // Agregar carpeta de storage/app/public (documentos de estudiantes)

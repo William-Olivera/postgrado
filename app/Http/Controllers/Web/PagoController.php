@@ -13,6 +13,7 @@ use App\Services\PdfService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class PagoController extends Controller
@@ -51,6 +52,37 @@ class PagoController extends Controller
         ])->findOrFail($id);
 
         return view('pagos.show', compact('pago'));
+    }
+
+    public function subirArchivo(Request $request, Pago $pago): JsonResponse
+    {
+        try {
+            $validated = $request->validate([
+                'archivo_adjunto' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            ]);
+
+            if ($request->hasFile('archivo_adjunto')) {
+                // Eliminar archivo anterior si existe
+                if ($pago->archivo_adjunto) {
+                    Storage::disk('public')->delete($pago->archivo_adjunto);
+                }
+
+                // Guardar nuevo archivo
+                $path = $request->file('archivo_adjunto')->store('pagos', 'public');
+                $pago->archivo_adjunto = $path;
+                $pago->save();
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Archivo adjuntado correctamente.',
+                    'archivo' => $path
+                ]);
+            }
+
+            return response()->json(['success' => false, 'message' => 'No se recibió ningún archivo'], 400);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
     }
 
     public function buscarEstudiante(Request $request): JsonResponse
@@ -117,5 +149,25 @@ class PagoController extends Controller
                 'periodo' => $i->curso->periodo,
             ]),
         ]);
+    }
+
+    public function eliminarArchivo(Pago $pago): JsonResponse
+    {
+        try {
+            if (!$pago->archivo_adjunto) {
+                return response()->json(['success' => false, 'message' => 'No hay archivo adjunto'], 404);
+            }
+
+            // Eliminar el archivo del storage
+            Storage::disk('public')->delete($pago->archivo_adjunto);
+
+            // Actualizar el registro
+            $pago->archivo_adjunto = null;
+            $pago->save();
+
+            return response()->json(['success' => true, 'message' => 'Archivo eliminado correctamente']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
     }
 }

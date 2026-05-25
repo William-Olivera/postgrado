@@ -76,11 +76,13 @@ class DeudaController extends Controller
                     'saldo' => (float) $d->saldo_cuota,
                     'estado' => $d->estado,
                     'pagos' => $d->pagos->map(fn ($p) => [
+                        'id' => $p->id,
                         'fecha_pago' => $p->fecha_pago->format('Y-m-d'),
                         'monto' => (float) $p->monto,
                         'nro_comprobante' => $p->nro_comprobante,
                         'usuario' => $p->registradoPor?->name,
                         'observacion' => $p->observacion,
+                        'archivo_adjunto' => $p->archivo_adjunto,
                     ]),
                 ]),
                 'saldo_total' => (float) ($plan->saldo_pendiente ?? 0),
